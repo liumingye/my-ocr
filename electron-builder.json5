@@ -1,0 +1,62 @@
+/**
+ * @see https://www.electron.build/configuration/configuration
+ */
+{
+  appId: "com.liumingye.my-ocr",
+  productName: "MY-OCR",
+  asar: true,
+  directories: {
+    output: "release/${version}",
+  },
+  files: ["dist-electron", "dist"],
+  linux: {
+    artifactName: "${productName}_${version}_${arch}.${ext}",
+    target: ["deb"],
+    icon: "build/logo.ico",
+    desktop: {
+      Icon: "build/logo.ico",
+    },
+  },
+  mac: {
+    target: [
+      {
+        target: "default",
+        arch: ["x64"],
+      },
+    ],
+    artifactName: "${productName}_${version}_${arch}.${ext}",
+    target: ["dmg", "zip"],
+  },
+  win: {
+    target: [
+      {
+        target: "nsis",
+        arch: ["x64"],
+      },
+    ],
+    artifactName: "${productName}_${version}_${arch}.${ext}",
+    icon: "build/logo.ico",
+    extraFiles: {
+      from: "./release/ocr_server/",
+      to: "ocr_server",
+    },
+  },
+  nsis: {
+    oneClick: false,
+    guid: "0852840C-7E5B-F395-7A62-DFD7BFDBB6DD",
+    perMachine: true,
+    allowElevation: true,
+    allowToChangeInstallationDirectory: true,
+    installerIcon: "build/logo.ico",
+    uninstallerIcon: "build/logo.ico",
+    installerHeaderIcon: "build/logo.ico",
+    createDesktopShortcut: true,
+    createStartMenuShortcut: true,
+  },
+  publish: {
+    provider: "generic",
+    url: "http://127.0.0.1:5500/",
+    channel: "latest",
+    updaterCacheDirName: "my-ocr-updater",
+  },
+}

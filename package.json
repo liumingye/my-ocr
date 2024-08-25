@@ -1,0 +1,67 @@
+{
+  "name": "my-ocr",
+  "productName": "MY-OCR",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist-electron/main/index.js",
+  "type": "module",
+  "homepage": ".",
+  "debug": {
+    "env": {
+      "VITE_DEV_SERVER_URL": "http://127.0.0.1:3000/"
+    }
+  },
+  "dependencies": {
+    "@arco-design/web-react": "^2.63.2",
+    "@electron/remote": "^2.0.8",
+    "electron-updater": "^6.2.1",
+    "node-screenshots": "^0.2.1",
+    "react-screenshots": "^0.5.22",
+    "thrift": "^0.20.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && electron-builder -c electron-builder.json5",
+    "prebuild": "vite build",
+    "preview": "vite preview",
+    "build-py-mac": "sh ./package-pyservice-mac.sh",
+    "build-py-win": "package-pyservice-win.bat",
+    "pack-app-mac": "./node_modules/.bin/electron-packager . --overwrite --ignore='\\.md|\\.spec|\\.bat|\\.sh' --ignore='^/aiocr-env' --ignore='^/thrift-src' --ignore='^/out' --ignore=7zr.exe --ignore=my-ocr.7z --ignore='^/public' --ignore='^/src' --ignore='^/py-service' --ignore='^/dist' --ignore='\\.DS_Store' --ignore='^/.git' --ignore='\\.gitignore' --ignore='^/assets' --out ./out --prune --icon=logo.icns && cp -R ./dist/ocr_server ./out/MY-OCR-darwin-x64/MY-OCR.app/Contents/Resources/app",
+    "pack-app-win": ".\\node_modules\\.bin\\electron-packager . --overwrite --ignore=\"\\.md|\\.spec|\\.bat|\\.sh\" --ignore=\"^/aiocr-env\" --ignore=\"^/thrift-src\" --ignore=\"^/out\" --ignore=7zr.exe --ignore=my-ocr.7z --ignore=\"^/public\" --ignore=\"^/src\" --ignore=\"^/py-service\" --ignore=\"^/dist\" --ignore=\"^/.git\" --ignore=\"\\.gitignore\" --ignore=\"^/assets\" --out .\\out --prune --icon=logo.ico && xcopy .\\dist\\ocr_server .\\out\\MY-OCR-win32-x64\\resources\\app\\ocr_server /s /e /i /y",
+    "7z-mac": "7z a my-ocr-darwin-x64.7z ./out/MY-OCR-darwin-x64/MY-OCR.app -t7z -mx=9",
+    "7z-win": ".\\7zr.exe a my-ocr-win-x64.7z .\\out\\MY-OCR-win32-x64 -t7z -mx=9"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "electron": "^32.0.1",
+    "electron-builder": "^24.13.3",
+    "nanoid": "^5.0.7",
+    "postcss": "^8.4.41",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "strip-ansi": "^7.1.0",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vite-plugin-electron": "^0.28.7",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  },
+  "resolutions": {
+    "jackspeak": "2.1.1"
+  }
+}
