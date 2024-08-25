@@ -10,47 +10,59 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift_ocr_py.ocr import OcrService
 import paddleocr
-
-
 from tbpu import getParser
+import gc
+from utils.timer import Timer
 
-# from tbpu import IgnoreArea
-from tbpu.parser_tools.paragraph_parse import word_separator  # 上下句间隔符
-
-
+# 内存回收时间
+gc_time = 60
 RUN_PATH = os.path.split(os.path.realpath(__file__))[0]
-ppocr = paddleocr.PaddleOCR(
-    # 语言支持
-    lang="ch",
-    # 是否使用GPU进行预测
-    use_gpu=False,
-    # 是否显示预测中的日志信息
-    show_log=False,
-    # 识别inference模型路径
-    rec_model_dir=os.path.join(RUN_PATH, "paddle_model", "rec-ch"),
-    # 检测inference模型路径
-    det_model_dir=os.path.join(RUN_PATH, "paddle_model", "det"),
-    # 方向分类器inference模型路径
-    cls_model_dir=os.path.join(RUN_PATH, "paddle_model", "cls"),
-    # 是否使用方向分类器
-    use_angle_cls=True,
-    ocr_version="PP-OCRv4",
-)
+
+
+def gc_collect():
+    global ppocr
+    if "ppocr" in dir():
+        del ppocr
+    gc.collect()
+    print("进行回收")
+
+
+def initOcr():
+    global ppocr
+    if "ppocr" in dir():
+        return
+    print("init ocr")
+    ppocr = paddleocr.PaddleOCR(
+        # 语言支持
+        lang="ch",
+        # 是否使用GPU进行预测
+        use_gpu=False,
+        # 是否显示预测中的日志信息
+        show_log=False,
+        # 识别inference模型路径
+        rec_model_dir=os.path.join(RUN_PATH, "paddle_model", "rec-ch"),
+        # 检测inference模型路径
+        det_model_dir=os.path.join(RUN_PATH, "paddle_model", "det"),
+        # 方向分类器inference模型路径
+        cls_model_dir=os.path.join(RUN_PATH, "paddle_model", "cls"),
+        # 是否使用方向分类器
+        use_angle_cls=True,
+        ocr_version="PP-OCRv4",
+        enable_mkldnn=True,
+    )
 
 
 class Ocr_handler:
     def ocr(self, nid, img_path, config):
+        initOcr()
+        timer.reset()
         # 设置config默认值
         default_config = {"tbpu": "none"}
         config = {**default_config, **config}
-
         res = {}
-
         print(f"start ocr {nid} {img_path}")
         print(f"{nid} start ocr")
-
         try:
-            tbs = ""
             if img_path.startswith("data:"):
                 img_data = re.sub("^data:image/.+;base64,", "", img_path)
                 im = cv2.imdecode(
@@ -61,32 +73,38 @@ class Ocr_handler:
                 result = ppocr.ocr(im, cls=True)
             else:
                 result = ppocr.ocr(img_path, cls=True)
-            tbs = result[0]
-            res["code"] = 100
 
-            # 处理数据
-            res["data"] = transform_data(tbs)
+            if result:
+                tbs = result[0]
+                res["code"] = 100
 
-            # 计算平均置信度
-            score, num = 0, 0
-            for r in res["data"]:
-                score += r["score"]
-                num += 1
-            if num > 0:
-                score /= num
-            res["score"] = score
+                # 处理数据
+                res["data"] = transform_data(tbs)
 
-            # 执行 tbpu
-            res["data"] = getParser(config["tbpu"]).run(res["data"])
-            # 如果忽略区域等处理将所有文本删除，则结束tbpu
-            if not res["data"]:
-                res["code"] = 101
-                res["data"] = ""
+                # 计算平均置信度
+                score, num = 0, 0
+                for r in res["data"]:
+                    score += r["score"]
+                    num += 1
+                if num > 0:
+                    score /= num
+                res["score"] = score
+
+                # 执行 tbpu
+                res["data"] = getParser(config["tbpu"]).run(res["data"])
+                # 如果忽略区域等处理将所有文本删除，则结束tbpu
+                if not res["data"]:
+                    res["code"] = 101
+                    res["data"] = ""
+            else:
+                res["code"] = 901
+                res["data"] = f"{nid} ocr error"
         except Exception as e:
             print(f"{nid} ocr error {e}")
             res["code"] = 901
             res["data"] = f"{nid} ocr error {e}"
         print("done")
+        timer.reset()
         return json.dumps(res)
 
 
@@ -103,6 +121,11 @@ def transform_data(data):
 
 
 if __name__ == "__main__":
+    # 内存回收
+    gc.enable()
+    timer = Timer(gc_time, gc_collect)  # 60 seconds = 1 minute
+    timer.start()
+    # ocr服务器
     port = 8265
     host = "127.0.0.1"
     # 创建服务端

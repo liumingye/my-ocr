@@ -158,10 +158,14 @@ type OcrListState = {
   end_time?: number;
 };
 
-type OcrListAction = {
-  type: "add" | "update" | "delete";
-  payload: OcrListState;
-};
+type OcrListAction =
+  | {
+      type: "add" | "update" | "delete";
+      payload: OcrListState;
+    }
+  | {
+      type: "empty";
+    };
 
 function App() {
   const pasteImageRef = useRef(window);
@@ -178,15 +182,15 @@ function App() {
   const [visible, setVisible] = useState(false);
 
   const onCardClick = (item: OcrListState, index: number) => {
-    if (!item) {
-      console.info("onCardClick1", item, index);
-      setSelectCardIndex(-1);
-      setTextareaText("");
-      setSelectCardId("");
-      setSelectImage("");
-      setVisible(false);
-      return;
-    }
+    // if (!item) {
+    //   console.info("onCardClick1", item, index);
+    //   setSelectCardIndex(-1);
+    //   setTextareaText("");
+    //   setSelectCardId("");
+    //   setSelectImage("");
+    //   setVisible(false);
+    //   return;
+    // }
     console.info("onCardClick2", item, index);
     setSelectCardIndex(index);
     setTextareaText(extractText(item.text));
@@ -197,42 +201,29 @@ function App() {
     setVisible(true);
   };
 
-  const [ocrList, orcListDispach] = useReducer(
-    (state: OcrListState[], action: OcrListAction) => {
-      let newState = state;
-      switch (action.type) {
-        case "add":
-          return [...state, action.payload];
-        case "update":
-          return state.map((item) => {
-            if (item.id === action.payload.id) {
-              if (item.id === selectCardId && action.payload.state === 1) {
-                setTextareaText(extractText(action.payload.text));
-              }
-              return { ...item, ...action.payload };
+  const orcListReducer = (state: OcrListState[], action: OcrListAction) => {
+    switch (action.type) {
+      case "add":
+        return [...state, action.payload];
+      case "update":
+        return state.map((item) => {
+          if (item.id === action.payload.id) {
+            if (item.id === selectCardId && action.payload.state === 1) {
+              setTextareaText(extractText(action.payload.text));
             }
-            return item;
-          });
-        case "delete":
-          newState = newState.filter((item) => item.id !== action.payload.id);
-          const index = state.findIndex(
-            (item) => item.id === action.payload.id
-          );
-          if (index > -1) {
-            if (newState[index]) {
-              onCardClick(newState[index], index);
-            } else {
-              onCardClick(newState[index - 1], index - 1);
-            }
+            return { ...item, ...action.payload };
           }
-
-          return newState;
-        default:
-          return state;
-      }
-    },
-    []
-  );
+          return item;
+        });
+      case "delete":
+        return state.filter((item) => item.id !== action.payload.id);
+      case "empty":
+        return [];
+      default:
+        return state;
+    }
+  };
+  const [ocrList, orcListDispach] = useReducer(orcListReducer, []);
 
   const pasteHandler = (e: ClipboardEvent) => {
     const { clipboardData } = e;
@@ -252,6 +243,13 @@ function App() {
   };
 
   useEffect(() => {
+    pasteImageRef.current?.addEventListener("paste", pasteHandler);
+    return () => {
+      pasteImageRef.current?.removeEventListener("paste", pasteHandler);
+    };
+  }, []);
+
+  useEffect(() => {
     const ok = (_e: Electron.IpcRendererEvent, buffer: Buffer) => {
       const file = new File([buffer], "screenshot.png", {
         type: "image/png",
@@ -263,6 +261,35 @@ function App() {
       window.ipcRenderer.off("SCREENSHOTS:ok", ok);
     };
   });
+
+  const thriftClientOcr = (id: string, imgOrPath: string) => {
+    if (window.thriftClient == null) return;
+    window.thriftClient.ocr(id, imgOrPath, globalConfig, (error, res) => {
+      if (error) {
+        console.error("ocr error", error);
+        orcListDispach({
+          type: "update",
+          payload: {
+            id: id,
+            text: { code: 101, data: [{ text: "识别出错了", end: "" }] },
+            state: -1,
+            end_time: Date.now(),
+          },
+        });
+      } else {
+        console.log("ocr ok", id, res, ocrList.length);
+        orcListDispach({
+          type: "update",
+          payload: {
+            id: id,
+            text: transferData(res),
+            state: 1,
+            end_time: Date.now(),
+          },
+        });
+      }
+    });
+  };
 
   const startOcr = (file: File) => {
     if (window.thriftClient == null) {
@@ -293,33 +320,18 @@ function App() {
         type: "update",
         payload: { id: id, img_data: img_b64 },
       });
-
-      if (!file.path && window.thriftClient) {
-        window.thriftClient.ocr(id, img_b64, globalConfig, (error, res) => {
-          if (error) {
-            console.error("ocr error", error);
-            orcListDispach({
-              type: "update",
-              payload: {
-                id: id,
-                text: { code: 101, data: [{ text: "识别出错了", end: "" }] },
-                state: -1,
-                end_time: Date.now(),
-              },
-            });
-          } else {
-            console.log("ocr ok", id, res, ocrList.length);
-            orcListDispach({
-              type: "update",
-              payload: {
-                id: id,
-                text: transferData(res),
-                state: 1,
-                end_time: Date.now(),
-              },
-            });
-          }
-        });
+      // console.log("ocrList", ocrList);
+      // onCardClick(
+      //   {
+      //     id: id,
+      //     text: { code: 101, data: [{ text: "正在识别中...", end: "" }] },
+      //     state: 0,
+      //     img_data: img_b64,
+      //   },
+      //   ocrList.length
+      // );
+      if (!file.path) {
+        thriftClientOcr(id, img_b64);
       }
     };
     reader.onerror = (e) => {
@@ -327,31 +339,7 @@ function App() {
     };
     reader.readAsDataURL(file);
     if (!!file.path) {
-      window.thriftClient.ocr(id, file.path, globalConfig, (error, res) => {
-        if (error) {
-          console.error("ocr error", error);
-          orcListDispach({
-            type: "update",
-            payload: {
-              id: id,
-              text: { code: 101, data: [{ text: "识别出错了", end: "" }] },
-              state: -1,
-              end_time: Date.now(),
-            },
-          });
-        } else {
-          console.log("ocr ok", id, res, ocrList.length);
-          orcListDispach({
-            type: "update",
-            payload: {
-              id: id,
-              text: transferData(res),
-              state: 1,
-              end_time: Date.now(),
-            },
-          });
-        }
-      });
+      thriftClientOcr(id, file.path);
     }
   };
 
@@ -436,6 +424,20 @@ function App() {
                             type: "delete",
                             payload: { id: item.id },
                           });
+                          setSelectCardId("");
+                          setSelectCardIndex(-1);
+                        },
+                      })
+                    );
+                    menu.append(
+                      new MenuItem({
+                        label: "清空",
+                        click: () => {
+                          orcListDispach({
+                            type: "empty",
+                          });
+                          setSelectCardId("");
+                          setSelectCardIndex(-1);
                         },
                       })
                     );
@@ -467,7 +469,10 @@ function App() {
               <Image.Preview
                 src={selectImage}
                 className="previewImage"
-                visible={visible}
+                visible={
+                  ocrList[selectCardIndex] &&
+                  ocrList[selectCardIndex].id === selectCardId
+                }
                 onVisibleChange={setVisible}
                 getPopupContainer={() => previewRef.current as HTMLElement}
                 closable={false}
@@ -476,40 +481,40 @@ function App() {
               />
             </div>,
             <div className="flex flex-col h-full">
-              {ocrList.length > 0 &&
-              selectCardIndex !== -1 &&
-              ocrList[selectCardIndex] &&
-              ocrList[selectCardIndex].state === 1 ? (
+              {ocrList[selectCardIndex] &&
+              ocrList[selectCardIndex].id === selectCardId ? (
                 <>
-                  <div className="p-1 text-xs flex justify-between">
-                    <div>
-                      <span>
-                        {"耗时 "}
-                        {ocrList[selectCardIndex].end_time &&
-                          ocrList[selectCardIndex].start_time &&
-                          (
-                            (ocrList[selectCardIndex].end_time -
-                              ocrList[selectCardIndex].start_time) /
-                            1000
-                          ).toFixed(2)}
-                      </span>
-                      {" | "}
-                      <span>
-                        {"置信度 "}
-                        {ocrList[selectCardIndex]?.text?.score?.toFixed(2)}
-                      </span>
+                  {ocrList[selectCardIndex].state === 1 && (
+                    <div className="p-1 text-xs flex justify-between">
+                      <div>
+                        <span>
+                          {"耗时 "}
+                          {ocrList[selectCardIndex].end_time &&
+                            ocrList[selectCardIndex].start_time &&
+                            (
+                              (ocrList[selectCardIndex].end_time -
+                                ocrList[selectCardIndex].start_time) /
+                              1000
+                            ).toFixed(2)}
+                        </span>
+                        {" | "}
+                        <span>
+                          {"置信度 "}
+                          {ocrList[selectCardIndex]?.text?.score?.toFixed(2)}
+                        </span>
+                      </div>
+                      <Button
+                        type="text"
+                        className="!px-0 !h-auto !leading-none !text-xs"
+                        onClick={() => {
+                          clipboard.writeText(textareaText);
+                          Message.success("复制成功");
+                        }}
+                      >
+                        复制
+                      </Button>
                     </div>
-                    <Button
-                      type="text"
-                      className="!px-0 !h-auto !leading-none !text-xs"
-                      onClick={() => {
-                        clipboard.writeText(textareaText);
-                        Message.success("复制成功");
-                      }}
-                    >
-                      复制
-                    </Button>
-                  </div>
+                  )}
                   <Input.TextArea
                     className="content-textarea !h-full"
                     placeholder=""
@@ -523,7 +528,7 @@ function App() {
                 </>
               ) : (
                 <div className="h-full flex items-center justify-center">
-                  {textareaText || "空"}
+                  空
                 </div>
               )}
             </div>,
