@@ -201,14 +201,9 @@ app.on("second-instance", () => {
 let pyProc: ChildProcessWithoutNullStreams | null = null;
 
 const createPyProc = () => {
-  let script = path.join(
-    process.env.APP_ROOT,
-    "release",
-    "ocr_server",
-    "ocr_server"
-  );
+  let script = path.join(process.env.APP_ROOT, "release/ocr_server/ocr_server");
   if (app.isPackaged) {
-    script = path.join(process.env.APP_ROOT, "../../ocr_server", "ocr_server");
+    script = path.join(process.env.APP_ROOT, "../../ocr_server/ocr_server");
   }
   pyProc = spawn(script);
   if (pyProc != null) {

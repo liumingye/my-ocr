@@ -2,7 +2,7 @@ export SITE_PACKAGES_PATH=$(pwd)/aiocr-env/lib/python3.8/site-packages
 export CODE_PATH=$(pwd)/py-service
 
 
-aiocr-env/bin/pyinstaller --workpath release\build --distpath release --clean -y -D --clean \
+aiocr-env/bin/pyinstaller --workpath release/build --distpath release --clean -y -D --clean \
     --exclude-module matplotlib \
 	--exclude-module pytz \
 	./py-service/ocr_server.py \

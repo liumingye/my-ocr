@@ -2,7 +2,7 @@ set SITE_PACKAGES_PATH=%cd%\aiocr-env\Lib\site-packages
 set CODE_PATH=%cd%\py-service
 
 
-aiocr-env\Scripts\pyinstaller --workpath release\build --distpath release --clean -y --clean ^
+aiocr-env\Scripts\pyinstaller --workpath release\build --distpath release --clean -y -D --clean ^
 --exclude-module matplotlib ^
 --exclude-module pytz ^
 .\py-service\ocr_server.py ^
