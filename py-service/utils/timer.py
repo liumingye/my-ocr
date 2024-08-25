@@ -11,7 +11,10 @@ class Timer:
         self.timer = threading.Timer(self.interval, self.function)
         self.timer.start()
 
-    def reset(self):
+    def cancel(self):
         if self.timer:
             self.timer.cancel()
+
+    def reset(self):
+        self.cancel()
         self.start()

@@ -20,11 +20,13 @@ RUN_PATH = os.path.split(os.path.realpath(__file__))[0]
 
 
 def gc_collect():
+    print("进行内存回收")
     global ppocr
+    # 重启ocr，来进行回收内存
     if "ppocr" in dir():
         del ppocr
+        initOcr()
     gc.collect()
-    print("进行回收")
 
 
 def initOcr():
@@ -54,8 +56,8 @@ def initOcr():
 
 class Ocr_handler:
     def ocr(self, nid, img_path, config):
+        timer.cancel()
         initOcr()
-        timer.reset()
         # 设置config默认值
         default_config = {"tbpu": "none"}
         config = {**default_config, **config}
@@ -121,10 +123,12 @@ def transform_data(data):
 
 
 if __name__ == "__main__":
-    # 内存回收
+    # 初始化ocr
+    initOcr()
+    # 开启内存回收
     gc.enable()
     timer = Timer(gc_time, gc_collect)  # 60 seconds = 1 minute
-    timer.start()
+    # timer.start()
     # ocr服务器
     port = 8265
     host = "127.0.0.1"
