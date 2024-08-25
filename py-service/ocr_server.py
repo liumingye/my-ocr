@@ -15,7 +15,7 @@ import gc
 from utils.timer import Timer
 
 # 内存回收时间
-gc_time = 60
+gc_time = 10
 RUN_PATH = os.path.split(os.path.realpath(__file__))[0]
 
 
@@ -23,15 +23,16 @@ def gc_collect():
     print("进行内存回收")
     global ppocr
     # 重启ocr，来进行回收内存
-    if "ppocr" in dir():
+    if "ppocr" in globals():
         del ppocr
         initOcr()
+        print("重启ocr")
     gc.collect()
 
 
 def initOcr():
     global ppocr
-    if "ppocr" in dir():
+    if "ppocr" in globals():
         return
     print("init ocr")
     ppocr = paddleocr.PaddleOCR(
