@@ -87,6 +87,13 @@ export default class Screenshots extends Events {
    * 开始截图
    */
   public async startCapture(): Promise<void> {
+    const event = new Event();
+    this.emit("startCapture", event);
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), 100);
+    }),
+
     this.logger("startCapture");
 
     const display = getDisplay();
@@ -102,6 +109,9 @@ export default class Screenshots extends Events {
    * 结束截图
    */
   public async endCapture(): Promise<void> {
+    const event = new Event();
+    this.emit("endCapture", event);
+
     this.logger("endCapture");
     await this.reset();
 

@@ -30,6 +30,7 @@
       background-color: var(--primary-color);
 
       .content__header-text {
+        padding: 0 10px;
         font-weight: bold;
         width: 0;
         flex-grow: 1;
@@ -45,8 +46,9 @@
       cursor: pointer;
 
       svg {
-        width: 17px;
-        height: 17px;
+        width: 30px;
+        height: 30px;
+        color: #fff;
       }
     }
 

@@ -170,7 +170,7 @@ html {
 
 .layout-basic-app .card-content > .arco-space-item {
   max-width: 100%;
-  min-width: 0;
+  /* min-width: 0; */
 }
 .layout-basic-app .card-content > .arco-space-item > .arco-space {
   max-width: 100%;
@@ -197,4 +197,9 @@ html {
 .layout-basic-app .arco-textarea.arco-textarea-focus {
   box-shadow: none;
   background-color: var(--color-bg-2);
+}
+
+.layout-basic-app .arco-card-size-default .arco-card-body {
+  padding: 12px;
+  height: 96px;
 }

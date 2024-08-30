@@ -90,7 +90,7 @@ function createWindow() {
   });
 
   if (process.platform === "darwin") {
-    app.dock.setIcon(path.join(__dirname, "logo.png"));
+    app.dock.setIcon(path.join(process.env.VITE_PUBLIC, "logo.png"));
   }
 
   // and load the index.html of the app.
@@ -116,11 +116,28 @@ function createWindow() {
       console.log(...args);
     },
   });
+  
+  let lastVisualStatus = true
+
+  screenshots.on("startCapture", (_e) => {
+    if (!mainWindow) return;
+    lastVisualStatus = mainWindow.isVisible()
+    mainWindow.hide();
+  });
+
+  screenshots.on("endCapture", (_e) => {
+    if (!mainWindow) return;
+    if(lastVisualStatus){
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
 
   screenshots.on("ok", (_e, buffer) => {
-    mainWindow?.webContents.send("SCREENSHOTS:ok", buffer);
-    mainWindow?.show();
-    mainWindow?.focus();
+    if (!mainWindow) return;
+    mainWindow.webContents.send("SCREENSHOTS:ok", buffer);
+    mainWindow.show();
+    mainWindow.focus();
   });
 
   ipcMain.on("startCapture", () => {
@@ -141,7 +158,7 @@ app
   .whenReady()
   .then(() => {
     let mainWindow = createWindow();
-    tray = new Tray(path.join(process.env.VITE_PUBLIC, "favicon.ico"));
+    tray = new Tray(path.join(process.env.VITE_PUBLIC, "logo.png"));
     tray.setToolTip("MY-OCR");
     const menu = getTrayMenu(mainWindow);
     if (isMac) {

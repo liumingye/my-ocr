@@ -25,6 +25,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
     print('Functions:')
     print('  string ocr(string id, string path,  config)')
+    print('  string rectify(string base64)')
     print('')
     sys.exit(0)
 
@@ -109,6 +110,12 @@ if cmd == 'ocr':
         print('ocr requires 3 args')
         sys.exit(1)
     pp.pprint(client.ocr(args[0], args[1], eval(args[2]),))
+
+elif cmd == 'rectify':
+    if len(args) != 1:
+        print('rectify requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.rectify(args[0],))
 
 else:
     print('Unrecognized method %s' % cmd)

@@ -39,19 +39,20 @@ const Update = () => {
 
   const onUpdateCanAvailable = useCallback(
     (_event: Electron.IpcRendererEvent, arg1: VersionInfo) => {
-      setModalOpen(true);
       setVersionInfo(arg1);
       setUpdateError(undefined);
       // Can be update
       if (arg1.update) {
+        setModalOpen(true);
         setModalBtn((state) => ({
           ...state,
-          cancelText: "Cancel",
-          okText: "Update",
+          cancelText: "取消",
+          okText: "更新",
           onOk: () => window.ipcRenderer.invoke("start-download"),
         }));
         setUpdateAvailable(true);
       } else {
+        // setModalOpen(false);
         setUpdateAvailable(false);
       }
     },
@@ -79,9 +80,12 @@ const Update = () => {
       setProgressInfo({ percent: 100 });
       setModalBtn((state) => ({
         ...state,
-        cancelText: "Later",
-        okText: "Install now",
-        onOk: () => window.ipcRenderer.invoke("quit-and-install"),
+        cancelText: "下次安装",
+        okText: "现在安装",
+        onOk: () => {
+          window.ipcRenderer.invoke("quit-and-install");
+          setModalOpen(false);
+        },
       }));
     },
     []
@@ -122,17 +126,17 @@ const Update = () => {
         <div className="modal-slot">
           {updateError ? (
             <div>
-              <p>Error downloading the latest version.</p>
+              <p>下载新版本时发生错误。</p>
               <p>{updateError.message}</p>
             </div>
           ) : updateAvailable ? (
             <div>
-              <div>The last version is: v{versionInfo?.newVersion}</div>
+              <div>发现新版本：v{versionInfo?.newVersion}</div>
               <div className="new-version__target">
                 v{versionInfo?.version} -&gt; v{versionInfo?.newVersion}
               </div>
               <div className="update__progress">
-                <div className="progress__title">Update progress:</div>
+                <div className="progress__title">更新进度：</div>
                 <div className="progress__bar">
                   <Progress percent={progressInfo?.percent}></Progress>
                 </div>

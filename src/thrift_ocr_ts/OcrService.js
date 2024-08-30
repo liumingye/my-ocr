@@ -5,15 +5,16 @@
 //
 "use strict";
 
-var thrift = require("thrift");
+var thrift = require('thrift');
 var Thrift = thrift.Thrift;
 var Q = thrift.Q;
-// var Int64 = require("node-int64");
+// var Int64 = require('node-int64');
+
 
 // var ttypes = require('./ocr_types');
 //HELPER FUNCTIONS AND STRUCTURES
 
-var OcrService_ocr_args = function (args) {
+var OcrService_ocr_args = function(args) {
   this.id = null;
   this.path = null;
   this.config = null;
@@ -30,7 +31,7 @@ var OcrService_ocr_args = function (args) {
   }
 };
 OcrService_ocr_args.prototype = {};
-OcrService_ocr_args.prototype.read = function (input) {
+OcrService_ocr_args.prototype.read = function(input) {
   input.readStructBegin();
   while (true) {
     var ret = input.readFieldBegin();
@@ -41,36 +42,36 @@ OcrService_ocr_args.prototype.read = function (input) {
     }
     switch (fid) {
       case 1:
-        if (ftype == Thrift.Type.STRING) {
-          this.id = input.readString();
-        } else {
-          input.skip(ftype);
-        }
-        break;
+      if (ftype == Thrift.Type.STRING) {
+        this.id = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       case 2:
-        if (ftype == Thrift.Type.STRING) {
-          this.path = input.readString();
-        } else {
-          input.skip(ftype);
-        }
-        break;
+      if (ftype == Thrift.Type.STRING) {
+        this.path = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       case 3:
-        if (ftype == Thrift.Type.MAP) {
-          this.config = {};
-          var _rtmp31 = input.readMapBegin();
-          var _size0 = _rtmp31.size || 0;
-          for (var _i2 = 0; _i2 < _size0; ++_i2) {
-            var key3 = null;
-            var val4 = null;
-            key3 = input.readString();
-            val4 = input.readString();
-            this.config[key3] = val4;
-          }
-          input.readMapEnd();
-        } else {
-          input.skip(ftype);
+      if (ftype == Thrift.Type.MAP) {
+        this.config = {};
+        var _rtmp31 = input.readMapBegin();
+        var _size0 = _rtmp31.size || 0;
+        for (var _i2 = 0; _i2 < _size0; ++_i2) {
+          var key3 = null;
+          var val4 = null;
+          key3 = input.readString();
+          val4 = input.readString();
+          this.config[key3] = val4;
         }
-        break;
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -80,25 +81,21 @@ OcrService_ocr_args.prototype.read = function (input) {
   return;
 };
 
-OcrService_ocr_args.prototype.write = function (output) {
-  output.writeStructBegin("OcrService_ocr_args");
+OcrService_ocr_args.prototype.write = function(output) {
+  output.writeStructBegin('OcrService_ocr_args');
   if (this.id !== null && this.id !== undefined) {
-    output.writeFieldBegin("id", Thrift.Type.STRING, 1);
+    output.writeFieldBegin('id', Thrift.Type.STRING, 1);
     output.writeString(this.id);
     output.writeFieldEnd();
   }
   if (this.path !== null && this.path !== undefined) {
-    output.writeFieldBegin("path", Thrift.Type.STRING, 2);
+    output.writeFieldBegin('path', Thrift.Type.STRING, 2);
     output.writeString(this.path);
     output.writeFieldEnd();
   }
   if (this.config !== null && this.config !== undefined) {
-    output.writeFieldBegin("config", Thrift.Type.MAP, 3);
-    output.writeMapBegin(
-      Thrift.Type.STRING,
-      Thrift.Type.STRING,
-      Thrift.objectLength(this.config)
-    );
+    output.writeFieldBegin('config', Thrift.Type.MAP, 3);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.config));
     for (var kiter5 in this.config) {
       if (this.config.hasOwnProperty(kiter5)) {
         var viter6 = this.config[kiter5];
@@ -114,7 +111,7 @@ OcrService_ocr_args.prototype.write = function (output) {
   return;
 };
 
-var OcrService_ocr_result = function (args) {
+var OcrService_ocr_result = function(args) {
   this.success = null;
   if (args) {
     if (args.success !== undefined && args.success !== null) {
@@ -123,7 +120,7 @@ var OcrService_ocr_result = function (args) {
   }
 };
 OcrService_ocr_result.prototype = {};
-OcrService_ocr_result.prototype.read = function (input) {
+OcrService_ocr_result.prototype.read = function(input) {
   input.readStructBegin();
   while (true) {
     var ret = input.readFieldBegin();
@@ -134,12 +131,12 @@ OcrService_ocr_result.prototype.read = function (input) {
     }
     switch (fid) {
       case 0:
-        if (ftype == Thrift.Type.STRING) {
-          this.success = input.readString();
-        } else {
-          input.skip(ftype);
-        }
-        break;
+      if (ftype == Thrift.Type.STRING) {
+        this.success = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       case 0:
         input.skip(ftype);
         break;
@@ -152,10 +149,10 @@ OcrService_ocr_result.prototype.read = function (input) {
   return;
 };
 
-OcrService_ocr_result.prototype.write = function (output) {
-  output.writeStructBegin("OcrService_ocr_result");
+OcrService_ocr_result.prototype.write = function(output) {
+  output.writeStructBegin('OcrService_ocr_result');
   if (this.success !== null && this.success !== undefined) {
-    output.writeFieldBegin("success", Thrift.Type.STRING, 0);
+    output.writeFieldBegin('success', Thrift.Type.STRING, 0);
     output.writeString(this.success);
     output.writeFieldEnd();
   }
@@ -164,25 +161,121 @@ OcrService_ocr_result.prototype.write = function (output) {
   return;
 };
 
-var OcrServiceClient = function (output, pClass) {
+var OcrService_rectify_args = function(args) {
+  this.base64 = null;
+  if (args) {
+    if (args.base64 !== undefined && args.base64 !== null) {
+      this.base64 = args.base64;
+    }
+  }
+};
+OcrService_rectify_args.prototype = {};
+OcrService_rectify_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true) {
+    var ret = input.readFieldBegin();
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid) {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.base64 = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+OcrService_rectify_args.prototype.write = function(output) {
+  output.writeStructBegin('OcrService_rectify_args');
+  if (this.base64 !== null && this.base64 !== undefined) {
+    output.writeFieldBegin('base64', Thrift.Type.STRING, 1);
+    output.writeString(this.base64);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var OcrService_rectify_result = function(args) {
+  this.success = null;
+  if (args) {
+    if (args.success !== undefined && args.success !== null) {
+      this.success = args.success;
+    }
+  }
+};
+OcrService_rectify_result.prototype = {};
+OcrService_rectify_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true) {
+    var ret = input.readFieldBegin();
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid) {
+      case 0:
+      if (ftype == Thrift.Type.STRING) {
+        this.success = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+OcrService_rectify_result.prototype.write = function(output) {
+  output.writeStructBegin('OcrService_rectify_result');
+  if (this.success !== null && this.success !== undefined) {
+    output.writeFieldBegin('success', Thrift.Type.STRING, 0);
+    output.writeString(this.success);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var OcrServiceClient = function(output, pClass) {
   this.output = output;
   this.pClass = pClass;
   this._seqid = 0;
   this._reqs = {};
 };
 OcrServiceClient.prototype = {};
-OcrServiceClient.prototype.seqid = function () {
-  return this._seqid;
-};
-OcrServiceClient.prototype.new_seqid = function () {
-  return (this._seqid += 1);
-};
+OcrServiceClient.prototype.seqid = function() { return this._seqid; };
+OcrServiceClient.prototype.new_seqid = function() { return this._seqid += 1; };
 
-OcrServiceClient.prototype.ocr = function (id, path, config, callback) {
+OcrServiceClient.prototype.ocr = function(id, path, config, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
-    this._reqs[this.seqid()] = function (error, result) {
+    this._reqs[this.seqid()] = function(error, result) {
       if (error) {
         _defer.reject(error);
       } else {
@@ -197,30 +290,31 @@ OcrServiceClient.prototype.ocr = function (id, path, config, callback) {
   }
 };
 
-OcrServiceClient.prototype.send_ocr = function (id, path, config) {
+OcrServiceClient.prototype.send_ocr = function(id, path, config) {
   var output = new this.pClass(this.output);
   var params = {
     id: id,
     path: path,
-    config: config,
+    config: config
   };
   var args = new OcrService_ocr_args(params);
   try {
-    output.writeMessageBegin("ocr", Thrift.MessageType.CALL, this.seqid());
+    output.writeMessageBegin('ocr', Thrift.MessageType.CALL, this.seqid());
     args.write(output);
     output.writeMessageEnd();
     return this.output.flush();
-  } catch (e) {
+  }
+  catch (e) {
     delete this._reqs[this.seqid()];
-    if (typeof output.reset === "function") {
+    if (typeof output.reset === 'function') {
       output.reset();
     }
     throw e;
   }
 };
 
-OcrServiceClient.prototype.recv_ocr = function (input, mtype, rseqid) {
-  var callback = this._reqs[rseqid] || function () {};
+OcrServiceClient.prototype.recv_ocr = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
   delete this._reqs[rseqid];
   if (mtype == Thrift.MessageType.EXCEPTION) {
     var x = new Thrift.TApplicationException();
@@ -235,70 +329,115 @@ OcrServiceClient.prototype.recv_ocr = function (input, mtype, rseqid) {
   if (null !== result.success) {
     return callback(null, result.success);
   }
-  return callback("ocr failed: unknown result");
+  return callback('ocr failed: unknown result');
 };
-var OcrServiceProcessor = function (handler) {
+
+OcrServiceClient.prototype.rectify = function(base64, callback) {
+  this._seqid = this.new_seqid();
+  if (callback === undefined) {
+    var _defer = Q.defer();
+    this._reqs[this.seqid()] = function(error, result) {
+      if (error) {
+        _defer.reject(error);
+      } else {
+        _defer.resolve(result);
+      }
+    };
+    this.send_rectify(base64);
+    return _defer.promise;
+  } else {
+    this._reqs[this.seqid()] = callback;
+    this.send_rectify(base64);
+  }
+};
+
+OcrServiceClient.prototype.send_rectify = function(base64) {
+  var output = new this.pClass(this.output);
+  var params = {
+    base64: base64
+  };
+  var args = new OcrService_rectify_args(params);
+  try {
+    output.writeMessageBegin('rectify', Thrift.MessageType.CALL, this.seqid());
+    args.write(output);
+    output.writeMessageEnd();
+    return this.output.flush();
+  }
+  catch (e) {
+    delete this._reqs[this.seqid()];
+    if (typeof output.reset === 'function') {
+      output.reset();
+    }
+    throw e;
+  }
+};
+
+OcrServiceClient.prototype.recv_rectify = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new OcrService_rectify_result();
+  result.read(input);
+  input.readMessageEnd();
+
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('rectify failed: unknown result');
+};
+var OcrServiceProcessor = function(handler) {
   this._handler = handler;
 };
-OcrServiceProcessor.prototype.process = function (input, output) {
+OcrServiceProcessor.prototype.process = function(input, output) {
   var r = input.readMessageBegin();
-  if (this["process_" + r.fname]) {
-    return this["process_" + r.fname].call(this, r.rseqid, input, output);
+  if (this['process_' + r.fname]) {
+    return this['process_' + r.fname].call(this, r.rseqid, input, output);
   } else {
     input.skip(Thrift.Type.STRUCT);
     input.readMessageEnd();
-    var x = new Thrift.TApplicationException(
-      Thrift.TApplicationExceptionType.UNKNOWN_METHOD,
-      "Unknown function " + r.fname
-    );
+    var x = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN_METHOD, 'Unknown function ' + r.fname);
     output.writeMessageBegin(r.fname, Thrift.MessageType.EXCEPTION, r.rseqid);
     x.write(output);
     output.writeMessageEnd();
     output.flush();
   }
 };
-OcrServiceProcessor.prototype.process_ocr = function (seqid, input, output) {
+OcrServiceProcessor.prototype.process_ocr = function(seqid, input, output) {
   var args = new OcrService_ocr_args();
   args.read(input);
   input.readMessageEnd();
   if (this._handler.ocr.length === 3) {
-    Q.fcall(
-      this._handler.ocr.bind(this._handler),
+    Q.fcall(this._handler.ocr.bind(this._handler),
       args.id,
       args.path,
       args.config
-    )
-      .then(function (result) {
-        var result_obj = new OcrService_ocr_result({ success: result });
-        output.writeMessageBegin("ocr", Thrift.MessageType.REPLY, seqid);
-        result_obj.write(output);
-        output.writeMessageEnd();
-        output.flush();
-      })
-      .catch(function (err) {
-        var result;
-        result = new Thrift.TApplicationException(
-          Thrift.TApplicationExceptionType.UNKNOWN,
-          err.message
-        );
-        output.writeMessageBegin("ocr", Thrift.MessageType.EXCEPTION, seqid);
-        result.write(output);
-        output.writeMessageEnd();
-        output.flush();
-      });
+    ).then(function(result) {
+      var result_obj = new OcrService_ocr_result({success: result});
+      output.writeMessageBegin("ocr", Thrift.MessageType.REPLY, seqid);
+      result_obj.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    }).catch(function (err) {
+      var result;
+      result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+      output.writeMessageBegin("ocr", Thrift.MessageType.EXCEPTION, seqid);
+      result.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
   } else {
     this._handler.ocr(args.id, args.path, args.config, function (err, result) {
       var result_obj;
-      if (err === null || typeof err === "undefined") {
-        result_obj = new OcrService_ocr_result(
-          err !== null || typeof err === "undefined" ? err : { success: result }
-        );
+      if ((err === null || typeof err === 'undefined')) {
+        result_obj = new OcrService_ocr_result((err !== null || typeof err === 'undefined') ? err : {success: result});
         output.writeMessageBegin("ocr", Thrift.MessageType.REPLY, seqid);
       } else {
-        result_obj = new Thrift.TApplicationException(
-          Thrift.TApplicationExceptionType.UNKNOWN,
-          err.message
-        );
+        result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
         output.writeMessageBegin("ocr", Thrift.MessageType.EXCEPTION, seqid);
       }
       result_obj.write(output);
@@ -307,4 +446,42 @@ OcrServiceProcessor.prototype.process_ocr = function (seqid, input, output) {
     });
   }
 };
+OcrServiceProcessor.prototype.process_rectify = function(seqid, input, output) {
+  var args = new OcrService_rectify_args();
+  args.read(input);
+  input.readMessageEnd();
+  if (this._handler.rectify.length === 1) {
+    Q.fcall(this._handler.rectify.bind(this._handler),
+      args.base64
+    ).then(function(result) {
+      var result_obj = new OcrService_rectify_result({success: result});
+      output.writeMessageBegin("rectify", Thrift.MessageType.REPLY, seqid);
+      result_obj.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    }).catch(function (err) {
+      var result;
+      result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+      output.writeMessageBegin("rectify", Thrift.MessageType.EXCEPTION, seqid);
+      result.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
+  } else {
+    this._handler.rectify(args.base64, function (err, result) {
+      var result_obj;
+      if ((err === null || typeof err === 'undefined')) {
+        result_obj = new OcrService_rectify_result((err !== null || typeof err === 'undefined') ? err : {success: result});
+        output.writeMessageBegin("rectify", Thrift.MessageType.REPLY, seqid);
+      } else {
+        result_obj = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("rectify", Thrift.MessageType.EXCEPTION, seqid);
+      }
+      result_obj.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
+  }
+};
+
 export { OcrServiceClient as Client, OcrServiceProcessor as Processor };

@@ -9,6 +9,7 @@
 
 service OcrService {
     string ocr(1: string id, 2: string path, 3: map<string, string> config)
+    string rectify(1: string base64)
 }
 
 // thrift -o thrift_ocr_ts --gen js:node,ts ocr.thrift
