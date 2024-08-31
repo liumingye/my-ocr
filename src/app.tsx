@@ -459,6 +459,18 @@ function App() {
     return data.data.reduce((text, item) => text + item.text + item.end, "");
   }
 
+  useEffect(() => {
+    const toggleDevTools = (ev: KeyboardEvent) => {
+      if (ev.key === "F12") {
+        window.ipcRenderer.send("toggleDevTools");
+      }
+    };
+    window.addEventListener("keyup", toggleDevTools);
+    return () => {
+      window.removeEventListener("keyup", toggleDevTools);
+    };
+  }, []);
+
   return (
     <div className="layout-basic-app">
       <Layout className="h-full">

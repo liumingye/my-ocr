@@ -6,13 +6,13 @@ import {
   BrowserWindow,
   Tray,
   globalShortcut,
-  dialog,
+  // dialog,
   ipcMain,
 } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import os from "node:os";
-import fs from "node:fs";
+// import fs from "node:fs";
 import { getTrayMenu } from "./menu";
 import { update } from "./update";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
@@ -77,7 +77,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-    icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
+    icon: path.join(process.env.VITE_PUBLIC, "logo.png"),
     // icon: path.join(__dirname, "logo.ico"),
   });
 
@@ -116,18 +116,18 @@ function createWindow() {
       console.log(...args);
     },
   });
-  
-  let lastVisualStatus = true
+
+  let lastVisualStatus = true;
 
   screenshots.on("startCapture", (_e) => {
     if (!mainWindow) return;
-    lastVisualStatus = mainWindow.isVisible()
+    lastVisualStatus = mainWindow.isVisible();
     mainWindow.hide();
   });
 
   screenshots.on("endCapture", (_e) => {
     if (!mainWindow) return;
-    if(lastVisualStatus){
+    if (lastVisualStatus) {
       mainWindow.show();
       mainWindow.focus();
     }
@@ -144,6 +144,11 @@ function createWindow() {
     screenshots.startCapture();
   });
 
+  ipcMain.on("toggleDevTools", () => {
+    if (!mainWindow) return;
+    mainWindow.webContents.toggleDevTools();
+  });
+
   globalShortcut.register("ctrl+shift+a", () => {
     screenshots.startCapture();
   });
@@ -154,29 +159,24 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app
-  .whenReady()
-  .then(() => {
-    let mainWindow = createWindow();
-    tray = new Tray(path.join(process.env.VITE_PUBLIC, "logo.png"));
-    tray.setToolTip("MY-OCR");
-    const menu = getTrayMenu(mainWindow);
-    if (isMac) {
-      // using tray.setContextMenu() on macOS will open the menu on left-click, so instead we'll
-      // manually bind the right-click event to open the menu
-      tray.addListener("right-click", () => {
-        tray?.popUpContextMenu(menu);
-      });
-    } else {
-      tray.setContextMenu(menu);
-    }
-    tray.addListener("click", () => {
-      mainWindow?.show();
+app.whenReady().then(() => {
+  let mainWindow = createWindow();
+  tray = new Tray(path.join(process.env.VITE_PUBLIC, "logo.png"));
+  tray.setToolTip("MY-OCR");
+  const menu = getTrayMenu(mainWindow);
+  if (isMac) {
+    // using tray.setContextMenu() on macOS will open the menu on left-click, so instead we'll
+    // manually bind the right-click event to open the menu
+    tray.addListener("right-click", () => {
+      tray?.popUpContextMenu(menu);
     });
-  })
-  .then(async () => {
-    //
+  } else {
+    tray.setContextMenu(menu);
+  }
+  tray.addListener("click", () => {
+    mainWindow?.show();
   });
+});
 
 app.on("before-quit", () => {
   // if CMD+Q is pressed, we want to quit the app even if we're using a Menu/Tray icon

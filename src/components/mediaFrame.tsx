@@ -94,24 +94,19 @@ function MediaFrame(props: Properties) {
         tracks[0].onended = () => {
           setShowCanvas(false);
           setIsError(true);
-          // if (intervalId) {
-          //   clearInterval(intervalId);
-          // }
         };
       }
 
       video.current.play();
 
-      mediaImage.current.url = "/logo.png";
+      mediaImage.current.url =
+        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
       mediaImage.current.on(ImageEvent.LOADED, () => {
         if (mediaImage.current.image) {
           mediaImage.current.image.view = video.current;
         }
       });
-
-      // const id = setInterval(() => {}, 1000 / 30);
-      // setIntervalId(id);
 
       setShowCanvas(true);
       setIsError(false);
