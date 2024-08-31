@@ -32,7 +32,7 @@ yarn版本：1.22.19
 
 ### 安装python依赖库
 
-`./myocr-env/bin/python -m pip install -r py-service/requirements.txt --index-url=https://mirror.baidu.com/pypi/simple`
+`./myocr-env/bin/python -m pip install -r py-service/requirements.txt --index-url=http://mirrors.aliyun.com/pypi/simple/`
 
 ### 测试ocr-server运行和安装ppocr模型
 
