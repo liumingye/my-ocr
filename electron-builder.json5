@@ -43,6 +43,7 @@
       from: "./release/ocr_server/",
       to: "ocr_server",
     },
+    icon: "build/logo.icns",
   },
   win: {
     target: [
