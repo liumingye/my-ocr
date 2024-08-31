@@ -60,8 +60,7 @@ export default defineConfig(({ command }) => {
         // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {
           resolve: {
-            // "cliui": { type: "cjs" },
-            // got: { type: "esm" },
+            thrift: { type: "cjs" },
           },
         },
       }),

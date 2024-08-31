@@ -18,13 +18,10 @@ const calculateTextWidth = (text: string, textStyle: string) => {
 };
 
 const euclideanDistance = (
-  pointA: [number, number],
-  pointB: [number, number]
+  [x1, y1]: [number, number],
+  [x2, y2]: [number, number]
 ) => {
-  return Math.sqrt(
-    (pointA[0] - pointB[0]) * (pointA[0] - pointB[0]) +
-      (pointA[1] - pointB[1]) * (pointA[1] - pointB[1])
-  );
+  return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 };
 
 const FloatingText = ({

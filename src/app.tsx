@@ -748,7 +748,7 @@ function App() {
                 ocrList[selectCardIndex].id === selectCardId ? (
                   <>
                     {ocrList[selectCardIndex].state === 1 && (
-                      <div className="h-6 text-xs flex justify-between items-center">
+                      <div className="h-6 text-xs flex justify-between items-center px-1">
                         <div>
                           <span>
                             {"耗时 "}
@@ -758,7 +758,7 @@ function App() {
                               1000
                             ).toFixed(2)}
                           </span>
-                          {" | "}
+                          {"s | "}
                           <span>
                             {"置信度 "}
                             {ocrList[selectCardIndex]?.text?.score?.toFixed(2)}

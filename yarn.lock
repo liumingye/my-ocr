@@ -1115,6 +1115,13 @@
   resolved "https://registry.npmmirror.com/@types/ms/-/ms-0.7.34.tgz#10964ba0dee6ac4cd462e2795b6bebd407303433"
   integrity sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==
 
+"@types/node-int64@*":
+  version "0.4.32"
+  resolved "https://registry.npmmirror.com/@types/node-int64/-/node-int64-0.4.32.tgz#a540bcb9e48816ca1b5329d1ab907d6ad134b856"
+  integrity sha512-xf/JsSlnXQ+mzvc0IpXemcrO4BrCfpgNpMco+GLcXkFk01k/gW9lGJu+Vof0ZSvHK6DsHJDPSbjFPs36QkWXqw==
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*":
   version "22.5.0"
   resolved "https://registry.npmmirror.com/@types/node/-/node-22.5.0.tgz#10f01fe9465166b4cab72e75f60d8b99d019f958"
@@ -1142,6 +1149,11 @@
   resolved "https://registry.npmmirror.com/@types/prop-types/-/prop-types-15.7.12.tgz#12bb1e2be27293c1406acb6af1c3f3a1481d98c6"
   integrity sha512-5zvhXYtRNRluoE/jAp4GVsSduVUzNWKkOZrCDBWYtE7biZywwdC2AcEzg+cSMLFRfVgeAFqpfNabiPjxFddV1Q==
 
+"@types/q@*":
+  version "1.5.8"
+  resolved "https://registry.npmmirror.com/@types/q/-/q-1.5.8.tgz#95f6c6a08f2ad868ba230ead1d2d7f7be3db3837"
+  integrity sha512-hroOstUScF6zhIi+5+x0dzqrHA1EJi+Irri6b1fxolMTqqHIV/Cg77EtnQcZqZCu8hR3mX2BzIxN4/GzI68Kfw==
+
 "@types/react-dom@^18.3.0":
   version "18.3.0"
   resolved "https://registry.npmmirror.com/@types/react-dom/-/react-dom-18.3.0.tgz#0cbc818755d87066ab6ca74fbedb2547d74a82b0"
@@ -1163,6 +1175,15 @@
   integrity sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==
   dependencies:
     "@types/node" "*"
+
+"@types/thrift@^0.10.17":
+  version "0.10.17"
+  resolved "https://registry.npmmirror.com/@types/thrift/-/thrift-0.10.17.tgz#54e835b9a0cb032da9535fad534557991d13dff7"
+  integrity sha512-bDX6d5a5ZDWC81tgDv224n/3PKNYfIQJTPHzlbk4vBWJrYXF6Tg1ncaVmP/c3JbGN2AK9p7zmHorJC2D6oejGQ==
+  dependencies:
+    "@types/node" "*"
+    "@types/node-int64" "*"
+    "@types/q" "*"
 
 "@types/verror@^1.10.3":
   version "1.10.10"

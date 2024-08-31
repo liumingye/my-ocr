@@ -1,22 +1,27 @@
-// render.js
 import * as OcrService from "./thrift_ocr_ts/OcrService";
-const thrift = require("thrift");
+import {
+  createConnection,
+  createClient,
+  Connection,
+  TCompactProtocol,
+} from "thrift";
 
-var thriftConnectionA = null;
-var thriftConnectionB = null;
+var thriftConnectionA: Connection | null = null;
+var thriftConnectionB: Connection | null = null;
 window.thriftClientA = null;
 window.thriftClientB = null;
 
 const init_thrift_A = () => {
-  thriftConnectionA = thrift.createConnection("127.0.0.1", 8265, {
-    protocol: thrift.TCompactProtocol,
+  thriftConnectionA = createConnection("127.0.0.1", 8265, {
+    protocol: TCompactProtocol,
   });
   thriftConnectionA.on("error", function (e) {
     console.error("connect A error", e);
   });
   thriftConnectionA.on("connect", function (e) {
     console.log("onconnect A");
-    thriftClientA = thrift.createClient(OcrService, thriftConnectionA);
+    if (!thriftConnectionA) return;
+    window.thriftClientA = createClient(OcrService, thriftConnectionA);
   });
   thriftConnectionA.on("close", function (e) {
     console.log("onclose A");
@@ -31,8 +36,8 @@ const init_thrift_A = () => {
 };
 
 const init_thrift_B = () => {
-  thriftConnectionB = thrift.createConnection("127.0.0.1", 8265, {
-    protocol: thrift.TCompactProtocol,
+  thriftConnectionB = createConnection("127.0.0.1", 8265, {
+    protocol: TCompactProtocol,
   });
 
   thriftConnectionB.on("error", function (e) {
@@ -40,7 +45,8 @@ const init_thrift_B = () => {
   });
   thriftConnectionB.on("connect", function (e) {
     console.log("onconnect B");
-    thriftClientB = thrift.createClient(OcrService, thriftConnectionB);
+    if (!thriftConnectionB) return;
+    window.thriftClientB = createClient(OcrService, thriftConnectionB);
   });
   thriftConnectionB.on("close", function (e) {
     console.log("onclose B");
