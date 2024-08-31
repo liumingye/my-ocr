@@ -1,4 +1,4 @@
-# AI-OCR编译和打包过程（mac版）
+# MY-OCR编译和打包过程（mac版）
 
 ## 编译和打包的系统环境
 
@@ -29,21 +29,21 @@ npm版本：8.13.2
 
 ### 安装python虚拟环境
 
-`virtualenv aiocr-env`
+`virtualenv myocr-env`
 
 ### 安装python依赖库
 
-`aiocr-env\bin\python -m pip install -r py-service\requirements.txt --index-url=https://mirror.baidu.com/pypi/simple`
+`myocr-env\bin\python -m pip install -r py-service\requirements.txt --index-url=https://mirror.baidu.com/pypi/simple`
 
 ### 测试ocr-server运行和安装ppocr模型
 
-`aiocr-env\Scripts\python.exe py-service\ocr_server.py`
+`myocr-env\Scripts\python.exe py-service\ocr_server.py`
 不出意外会自动下载ppocr相关模型文件到 py-service\paddle_model 目录下，然后显示`start server on 8264` 就说明python端ocr服务可以正常运行，运行正常就可以退出了
 
 ### 使用pyinstaller对py-service打包成exe文件
 
 打包前先修改 paddle 程序里会引起错误的地方，主要是会引起报错或者无限启动进程耗尽资源的问题，找到虚拟环境下这个文件
-`aiocr-env\Lib\site-packages\paddle\dataset\image.py`
+`myocr-env\Lib\site-packages\paddle\dataset\image.py`
 找到这部分文件内容
 ```python
 

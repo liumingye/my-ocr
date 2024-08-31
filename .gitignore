@@ -31,9 +31,8 @@ ocr_server.spec
 ai-ocr-darwin-x64.7z
 
 build/ocr_server
-dpkg
-my-ocr.deb
 aiocr-env
+myocr-env
 dist-electron
 .vscode
 release

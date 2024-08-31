@@ -40,6 +40,12 @@ my-ocr
 
 [MY-OCR编译和打包过程（mwindows版）](/package-win.md)
 
+### 一些问题
+
+Q：银河麒麟系统安装后没有权限读取图片？
+
+A：终端执行```setstatus softmode -p```，设置为 softmode，执行getstatus查询当前状态
+
 ### 感谢项目
 [ai-ocr: https://github.com/bingal/ai-ocr](https://github.com/bingal/ai-ocr)
 

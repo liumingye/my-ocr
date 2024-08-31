@@ -1,9 +1,9 @@
 export PY_VERSION=`python3 -V 2>&1|awk '{print $2}'|awk -F '.' '{print $1"."$2}'`
-export SITE_PACKAGES_PATH=$(pwd)/aiocr-env/lib/python${PY_VERSION}/site-packages
+export SITE_PACKAGES_PATH=$(pwd)/myocr-env/lib/python${PY_VERSION}/site-packages
 export CODE_PATH=$(pwd)/py-service
 
 
-aiocr-env/bin/pyinstaller --workpath release/build --distpath release --clean -y -D --clean \
+myocr-env/bin/pyinstaller --workpath release/build --distpath release --clean -y -D --clean \
     --exclude-module matplotlib \
 	--exclude-module pytz \
 	./py-service/ocr_server.py \
