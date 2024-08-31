@@ -28,7 +28,6 @@ thrift-src/gen.bat
 thrift-src/thrift.exe
 out
 ocr_server.spec
-ai-ocr-darwin-x64.7z
 
 build/ocr_server
 aiocr-env

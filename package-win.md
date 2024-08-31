@@ -1,4 +1,4 @@
-# MY-OCR编译和打包过程（mac版）
+# MY-OCR编译和打包过程（win版）
 
 ## 编译和打包的系统环境
 
@@ -8,7 +8,7 @@ python版本：3.9.5 64bit（miniconda）
 
 nodejs版本：16.7.1
 
-npm版本：8.15.0
+yarn版本：1.22.19
 
 ### 基本环境准备
 
@@ -20,9 +20,9 @@ npm版本：8.15.0
 
 ### 拉取代码
 
-`git clone https://gitee.com/bingal/ai-ocr.git`
+`git clone https://github.com/liumingye/my-ocr.git`
 进入项目目录（后面执行命令都是在项目根目录内执行）
-`cd ai-ocr`
+`cd my-ocr`
 
 ## python部分的调试和打包
 
@@ -37,7 +37,7 @@ npm版本：8.15.0
 ### 测试ocr-server运行和安装ppocr模型
 
 `./myocr-env/bin/python py-service/ocr_server.py`
-不出意外会自动下载ppocr相关模型文件到 py-service\paddle_model 目录下，然后显示`start server on 8264` 就说明python端ocr服务可以正常运行，运行正常就可以退出了
+不出意外会自动下载ppocr相关模型文件到 py-service\paddle_model 目录下，然后显示`start server on 8265` 就说明python端ocr服务可以正常运行，运行正常就可以退出了
 
 ### 使用pyinstaller对py-service打包成可执行文件
 
@@ -112,11 +112,11 @@ except ImportError:
     cv2 = None
 ```
 使用pyinstaller打包py-service，具体命令已经写好bat脚本，在项目根目录下直接执行即可
-`npm run build-py-win`
-打包过程大概需要几分钟，全部执行完成之后，会在项目目录的 dist 目录下生成 ocr_server 的目录，就是打包生成的最终文件，执行`dist\ocr_server\ocr_server.exe` 不出意外可以看到输出`start server on 8264` 就说明一切正常。
+`yarn build-py-win`
+打包过程大概需要几分钟，全部执行完成之后，会在项目目录的 release 目录下生成 ocr_server 的目录，就是打包生成的最终文件，执行`release\ocr_server\ocr_server.exe` 不出意外可以看到输出`start server on 8265` 就说明一切正常。
 
 ## 运行和打包 elactron 程序部分
 
 本项目界面基于字节跳动的 arco design 的 react 开发，执行下面的命令打包
-`npm run pack-app-win`
-不出意外会在目录`out\AI-OCR-win32-x64`下生成最终的exe程序，双击执行`out\AI-OCR-win32-x64\AI-OCR.exe`即可启动，打包后生成文件总共1.15GB，文件实在有点大，主要还是python端生成的包比较大，为了传输方便可以7zip压缩一下，执行`npm run 7z-win`进行压缩，完成后会在项目目录下生成压缩包文件`ai-ocr-win-x64.7z`，总共240MB。
+`yarn build`
+不出意外会在目录`out\MY-OCR-win32-x64`下生成最终的exe程序，双击执行`out\MY-OCR-win32-x64\MY-OCR.exe`即可启动，打包后生成文件总共1.15GB。
