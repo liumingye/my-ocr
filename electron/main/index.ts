@@ -90,7 +90,7 @@ function createWindow() {
   });
 
   if (process.platform === "darwin") {
-    app.dock.setIcon(path.join(process.env.VITE_PUBLIC, "logo.png"));
+    app.dock.setIcon(path.join(process.env.VITE_PUBLIC, "dock.png"));
   }
 
   // and load the index.html of the app.
