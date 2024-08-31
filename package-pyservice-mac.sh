@@ -1,4 +1,5 @@
-export SITE_PACKAGES_PATH=$(pwd)/aiocr-env/lib/python3.8/site-packages
+export PY_VERSION=`python3 -V 2>&1|awk '{print $2}'|awk -F '.' '{print $1"."$2}'`
+export SITE_PACKAGES_PATH=$(pwd)/aiocr-env/lib/python${PY_VERSION}/site-packages
 export CODE_PATH=$(pwd)/py-service
 
 
