@@ -89,7 +89,7 @@ function createWindow() {
     }
   });
 
-  if (process.platform === "darwin") {
+  if (isMac) {
     app.dock.setIcon(path.join(process.env.VITE_PUBLIC, "dock.png"));
   }
 
@@ -161,7 +161,9 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   let mainWindow = createWindow();
-  tray = new Tray(path.join(process.env.VITE_PUBLIC, "logo.png"));
+  tray = new Tray(
+    path.join(process.env.VITE_PUBLIC, isMac ? "tray.png" : "logo.png")
+  );
   tray.setToolTip("MY-OCR");
   const menu = getTrayMenu(mainWindow);
   if (isMac) {
