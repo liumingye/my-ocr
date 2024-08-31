@@ -25,10 +25,10 @@
         to: "resources",
       },
     ],
-    desktop:{
+    desktop: {
       Icon: "/opt/MY-OCR/resources/logo.png",
-      Category: "Application;AudioVideo;Graphics;"
-    }
+      Category: "Application;AudioVideo;Graphics;",
+    },
   },
   mac: {
     target: [

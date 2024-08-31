@@ -1,7 +1,7 @@
 import "./index.css";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "./app";
 import UpdateElectron from "@/components/update";
 import "./render";
 
@@ -13,3 +13,7 @@ root.render(
     <App />
   </StrictMode>
 );
+
+setTimeout(() => {
+  postMessage({ payload: "removeLoading" }, "*");
+}, 50);

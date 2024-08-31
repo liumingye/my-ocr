@@ -1,0 +1,91 @@
+* {
+  user-select: none;
+}
+
+#root,
+body,
+html {
+  height: 100vh;
+}
+
+.layout-basic-app {
+  height: 100vh;
+  background-color: var(--color-neutral-2);
+}
+
+.layout-basic-app .left-side-toolbar {
+  padding: 10px;
+}
+
+.sider .arco-layout-sider-children {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.layout-basic-app .arco-layout-content {
+  background: var(--color-bg-3);
+  text-align: left;
+}
+
+.layout-basic-app .arco-upload-trigger-drag {
+  padding: 10px 0;
+}
+.layout-basic-app .arco-upload-trigger-drag .arco-icon-plus {
+  margin-bottom: 0px;
+}
+
+.layout-basic-app .card-selected {
+  background-color: rgb(var(--primary-6));
+  color: var(--color-fill-1);
+}
+
+.layout-basic-app .card-selected .ocr-content {
+  color: var(--color-fill-1);
+}
+
+.layout-basic-app .card-selected .arco-icon {
+  stroke: var(--color-fill-1);
+}
+
+.layout-basic-app .card-state-icon,
+.layout-basic-app .ocr-content {
+  cursor: default;
+}
+
+.layout-basic-app .card-content > .arco-space-item {
+  max-width: 100%;
+  /* min-width: 0; */
+}
+.layout-basic-app .card-content > .arco-space-item > .arco-space {
+  max-width: 100%;
+}
+.layout-basic-app
+  .card-content
+  > .arco-space-item
+  > .arco-space
+  > .arco-space-item:nth-child(2) {
+  min-width: 0;
+}
+
+.layout-basic-app .arco-image-preview-scale-value {
+  pointer-events: none;
+}
+
+.layout-basic-app .arco-textarea {
+  border: none;
+  background-color: var(--color-bg-2);
+}
+
+.layout-basic-app .arco-textarea:hover,
+.layout-basic-app .arco-textarea:focus,
+.layout-basic-app .arco-textarea.arco-textarea-focus {
+  box-shadow: none;
+  background-color: var(--color-bg-2);
+}
+
+.layout-basic-app .arco-card-size-default .arco-card-body {
+  padding: 12px;
+  height: 96px;
+}

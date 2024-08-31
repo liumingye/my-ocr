@@ -1,36 +1,54 @@
-import "./App.css";
+import "./app.css";
 import "@arco-design/web-react/dist/css/arco.css";
-import { useState, useReducer, useRef, useEffect } from "react";
+import {
+  useState,
+  useReducer,
+  useRef,
+  useEffect,
+  MutableRefObject,
+} from "react";
 import {
   Card,
   Space,
   Layout,
   Divider,
-  Avatar,
   Input,
   Upload,
   Message,
-  Image,
   ResizeBox,
   Button,
+  Checkbox,
+  Tag,
 } from "@arco-design/web-react";
-import type { UploadInstance } from "@arco-design/web-react/es/Upload/interface";
-import { IconCheck, IconClose, IconLoading } from "@arco-design/web-react/icon";
 import { nanoid } from "nanoid";
 import { Menu, MenuItem, getCurrentWindow, clipboard } from "@electron/remote";
-import type { Client } from "./thrift_ocr_ts/OcrService";
-import MediaFrame from "@/components/mediaFrame"; // render.js
-
-declare global {
-  interface Window {
-    // 双连接，防止阻塞
-    thriftClientA: Client | null;
-    thriftClientB: Client | null;
-  }
-}
+import MediaFrame from "@/components/mediaFrame";
+import FloatingText from "@/components/floatingText";
+import CardContent from "@/components/cardContent";
+import {
+  IconPaste,
+  IconCamera,
+  IconScissor,
+  IconFontColors,
+  IconExpand,
+  IconOriginalSize,
+  IconFullscreen,
+  IconSave,
+} from "@arco-design/web-react/icon";
+import {
+  App as LeaferApp,
+  Image as LeaferImage,
+  ImageEvent,
+  MoveEvent,
+  ZoomEvent,
+  Text,
+} from "leafer-ui";
+import { ScrollBar } from "@leafer-in/scroll";
+import { useSize, useThrottleFn } from "ahooks";
+import { isAcceptFile } from "@/utils";
 
 // 选中文本右键菜单增加复制功能
-const handleContextMenu = (e: any) => {
+const handleContextMenu = () => {
   let menu = new Menu();
   menu.append(new MenuItem({ label: "剪切", role: "cut" }));
   menu.append(new MenuItem({ label: "复制", role: "copy" }));
@@ -38,115 +56,6 @@ const handleContextMenu = (e: any) => {
   menu.popup({
     window: getCurrentWindow(),
   });
-};
-
-const isAcceptFile = (file: File, accept: string) => {
-  if (accept && file) {
-    const accepts = Array.isArray(accept)
-      ? accept
-      : accept
-          .split(",")
-          .map((x) => x.trim())
-          .filter((x) => x);
-    const fileExtension =
-      file.name.indexOf(".") > -1 ? file.name.split(".").pop() : "";
-    return accepts.some((type) => {
-      const text = type && type.toLowerCase();
-      const fileType = (file.type || "").toLowerCase();
-      // console.log(fileType, text);
-      if (text === fileType) {
-        // 类似excel文件这种
-        // 比如application/vnd.ms-excel和application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-        // 本身就带有.字符的，不能走下面的.jpg等文件扩展名判断处理
-        // 所以优先对比input的accept类型和文件对象的type值
-        return true;
-      }
-      if (/\*/.test(text)) {
-        // image/* 这种通配的形式处理
-        // console.log(
-        //   "fileType.replace(//.*$/, '') === text.replace(//.*$/, '')",
-        //   fileType.replace(/\/.*$/, "") === text.replace(/\/.*$/, "")
-        // );
-        return fileType.replace(/\/.*$/, "") === text.replace(/\/.*$/, "");
-      }
-      if (/..*/.test(text)) {
-        // .jpg 等后缀名
-        // console.log(
-        //   "fileExtension === text.replace(/./, '')",
-        //   fileExtension === text.replace(/\./, "")
-        // );
-        return text === `.${fileExtension && fileExtension.toLowerCase()}`;
-      }
-      return false;
-    });
-  }
-  return !!file;
-};
-
-const CardContent = ({
-  text,
-  state,
-  img_data,
-}: {
-  text: string;
-  state: number;
-  img_data: string;
-}) => {
-  return (
-    <Space
-      className="card-content"
-      size="mini"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <Space size="medium">
-        <Avatar
-          style={{
-            backgroundColor: "#165DFF",
-          }}
-          size={64}
-          shape="square"
-        >
-          {img_data ? (
-            <img src={img_data} style={{ width: "100%", height: "100%" }} />
-          ) : (
-            <IconLoading />
-          )}
-        </Avatar>
-        <div
-          style={{
-            fontSize: "12px",
-            height: "auto",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: "3",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-          }}
-          className="ocr-content"
-        >
-          {text}
-        </div>
-      </Space>
-      {state == 1 ? (
-        <IconCheck />
-      ) : state == 0 ? (
-        <IconLoading />
-      ) : (
-        <IconClose />
-      )}
-    </Space>
-  );
-};
-
-type OcrData = {
-  text: string;
-  end: string;
-  score?: number;
-  box?: [number, number][];
 };
 
 type OcrListState = {
@@ -178,30 +87,162 @@ function App() {
   const [selectImage, setSelectImage] = useState("");
   const [selectCardIndex, setSelectCardIndex] = useState(-1);
   const [isMedia, setIsMedia] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
-  const uploadRef = useRef<UploadInstance>(null);
+
+  const [showText, setShowText] = useState(true);
+  const [showBorder, setShowBorder] = useState(false);
+
+  const mediaView = useRef<HTMLDivElement>(null);
+
+  const leafer = useRef<LeaferApp>() as MutableRefObject<LeaferApp>;
+  const [transform, setTransform] = useState("translate(0px, 0px) scale(1)");
+
+  const adapt = () => {
+    leafer.current.tree.zoom("fit", 0.0001);
+    leafer.current.tree.emitEvent({
+      type: ZoomEvent.ZOOM,
+    });
+  };
+
+  const actual = () => {
+    leafer.current.tree.zoom(1);
+    leafer.current.tree.emitEvent({
+      type: ZoomEvent.ZOOM,
+    });
+  };
+
+  useEffect(() => {
+    if (!mediaView.current || isMedia) return;
+
+    leafer.current = new LeaferApp({
+      view: mediaView.current,
+
+      tree: {
+        wheel: { zoomMode: "mouse", zoomSpeed: 0.01 },
+        zoom: { min: 0.3 },
+        move: {
+          drag: "auto",
+          holdMiddleKey: false,
+          disabled: false,
+          // scroll: "limit",
+        },
+      },
+      sky: {
+        type: "draw",
+        move: {
+          drag: "auto",
+          // disabled: true,
+        },
+      },
+    });
+
+    const scroll = new ScrollBar(leafer.current);
+    scroll.on(MoveEvent.DRAG, () => {
+      leafer.current.tree.emitEvent({
+        type: ZoomEvent.ZOOM,
+      });
+    });
+
+    if (selectImage) {
+      const mediaImage = new LeaferImage({
+        x: 0,
+        y: 0,
+        fill: "#000",
+        // around: "center",
+        url: selectImage,
+      });
+
+      leafer.current.tree.on([ZoomEvent.ZOOM, MoveEvent.MOVE], (e) => {
+        // console.log("move", e);
+        const point = mediaImage.getWorldPoint({ x: 0, y: 0 });
+        setTransform(
+          `translate(${point.x}px,${point.y}px) scale(${leafer.current.tree.scaleX},${leafer.current.tree.scaleY})`
+        );
+      });
+
+      mediaImage.on(ImageEvent.LOADED, () => {
+        // 加载完图片的时候，适应窗口大小
+        adapt();
+      });
+
+      leafer.current.tree.add(mediaImage);
+    } else {
+      const color = window
+        .getComputedStyle(document.body)
+        .getPropertyValue("--color-text-1");
+      const text = new Text({
+        text: "截图、拖入或粘贴图片",
+        fontSize: 16,
+        fill: color,
+      });
+      leafer.current.tree.add(text);
+      leafer.current.config.zoom = {
+        ...leafer.current.config.zoom,
+        min: 1,
+        max: 1,
+      };
+      leafer.current.config.move = {
+        ...leafer.current.config.move,
+        disabled: true,
+        drag: false,
+      };
+      // leafer.current.zoom("fit", 50);
+    }
+
+    // 切换Card后的时候，适应窗口大小
+    adapt();
+
+    return () => {
+      leafer.current.destroy(); // 开发环境useEffect会执行2次，必须及时销毁
+    };
+  }, [isMedia, selectImage]);
+
+  const size = useSize(mediaView);
+
+  const resize = useThrottleFn(
+    () => {
+      if (size) {
+        leafer.current.tree.zoom("fit", 0.0001, !!!selectImage);
+        leafer.current.tree.emitEvent({
+          type: ZoomEvent.ZOOM,
+        });
+      }
+    },
+    { wait: 100 }
+  );
+
+  useEffect(() => {
+    resize.run();
+  }, [size]);
 
   let [globalConfig, setGlobalConfig] = useState({
     tbpu: "multi_para",
   });
 
+  const resetCardClick = () => {
+    setTextareaText("");
+    setSelectCardId("");
+    setSelectCardIndex(-1);
+    setSelectImage("");
+  };
+
   const onCardClick = (item: OcrListState, index: number) => {
-    setIsMedia(false);
-    // if (!item) {
-    //   console.info("onCardClick1", item, index);
-    //   setSelectCardIndex(-1);
-    //   setTextareaText("");
-    //   setSelectCardId("");
-    //   setSelectImage("");
-    //   return;
-    // }
-    console.info("onCardClick2", item, index);
-    setSelectCardIndex(index);
     setTextareaText(extractText(item.text));
     setSelectCardId(item.id);
+    setSelectCardIndex(index);
     if (!!item.img_data) {
       setSelectImage(item.img_data);
     }
+    setIsMedia(false);
+    console.info("onCardClick", item, index);
+  };
+
+  const savePic = (id: string) => {
+    const current = ocrList.find((item) => item.id === id);
+    if (!current || !current.img_data) return;
+    const a = document.createElement("a");
+    a.href = current.img_data;
+    a.setAttribute("download", Date.now().toString());
+    a.click();
   };
 
   const orcListReducer = (state: OcrListState[], action: OcrListAction) => {
@@ -264,13 +305,9 @@ function App() {
 
   // 绑定拖拽事件
   useEffect(() => {
-    // document.body.addEventListener("drag", dragHandler, false);
-    // document.body.addEventListener("dragenter", dragHandler, false);
     document.body.addEventListener("drop", dragHandler, false);
     document.body.addEventListener("dragover", dragHandler, false);
     return () => {
-      // document.body.removeEventListener("drag", dragHandler, false);
-      // document.body.removeEventListener("dragenter", dragHandler, false);
       document.body.removeEventListener("drop", dragHandler, false);
       document.body.removeEventListener("dragover", dragHandler, false);
     };
@@ -434,8 +471,9 @@ function App() {
           }}
         >
           <div className="left-side-toolbar">
-            <Space className="mb-2">
+            <Space className="mb-2" size={17}>
               <Button
+                icon={<IconScissor />}
                 onClick={() => {
                   window.ipcRenderer.send("startCapture");
                 }}
@@ -443,6 +481,7 @@ function App() {
                 截图
               </Button>
               <Button
+                icon={<IconPaste />}
                 onClick={() => {
                   navigator.clipboard.read().then(async (items) => {
                     for (const item of items) {
@@ -463,13 +502,15 @@ function App() {
                 粘贴
               </Button>
               <Button
+                icon={<IconCamera />}
                 onClick={() => {
+                  resetCardClick();
                   setIsMedia(!isMedia);
                 }}
               >
                 拍照
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => {
                   if (
                     uploadRef.current &&
@@ -483,10 +524,10 @@ function App() {
                 }}
               >
                 上传
-              </Button>
+              </Button> */}
             </Space>
             <Upload
-              ref={uploadRef}
+              // ref={uploadRef}
               showUploadList={false}
               beforeUpload={(file) => {
                 startOcr(file);
@@ -508,7 +549,7 @@ function App() {
             />
           </div>
           <Divider className="left-side-divider !my-0" />
-          <div className="left-side-content overflow-auto">
+          <div className="left-side-content overflow-hidden">
             {ocrList.map((item, index) => {
               return (
                 <Card
@@ -526,8 +567,7 @@ function App() {
                             type: "delete",
                             payload: { id: item.id },
                           });
-                          setSelectCardId("");
-                          setSelectCardIndex(-1);
+                          resetCardClick();
                         },
                       })
                     );
@@ -535,14 +575,7 @@ function App() {
                       new MenuItem({
                         label: "保存",
                         click: () => {
-                          const current = ocrList.find(
-                            (item) => item.id === item.id
-                          );
-                          if (!current || !current.img_data) return;
-                          const a = document.createElement("a");
-                          a.href = current.img_data;
-                          a.setAttribute("download", Date.now().toString());
-                          a.click();
+                          savePic(item.id);
                         },
                       })
                     );
@@ -553,8 +586,7 @@ function App() {
                           orcListDispach({
                             type: "empty",
                           });
-                          setSelectCardId("");
-                          setSelectCardIndex(-1);
+                          resetCardClick();
                         },
                       })
                     );
@@ -582,44 +614,132 @@ function App() {
           max={0.8}
           min={0.2}
           panes={[
-            <div className="relative h-full" ref={previewRef}>
+            <div className="flex flex-col relative h-full w-full overflow-hidden">
               {isMedia ? (
                 <MediaFrame
                   onTake={(base64) => {
                     if (window.thriftClientB == null) return;
-                    window.thriftClientB.rectify(base64, (error, res) => {
+                    window.thriftClientB.rectify(base64, (_, res) => {
                       console.log("rectify comp", res);
                       const data = JSON.parse(res);
                       startOcr("data:image/jpeg;base64," + data.data);
                     });
-                    // const id = startOcr(base64);
-                    // if (!id || window.thriftClientB == null) return;
-                    // window.thriftClientB.rectify(base64, (error, res) => {
-                    //   console.log("rectify comp", res);
-                    //   const data = JSON.parse(res);
-                    //   orcListDispach({
-                    //     type: "update",
-                    //     payload: {
-                    //       id,
-                    //       img_data: "data:image/jpeg;base64," + data.data,
-                    //     },
-                    //   });
-                    // });
                   }}
                 />
               ) : (
-                <Image.Preview
-                  src={selectImage}
-                  className="previewImage"
-                  visible={
-                    ocrList[selectCardIndex] &&
-                    ocrList[selectCardIndex].id === selectCardId
-                  }
-                  getPopupContainer={() => previewRef.current as HTMLElement}
-                  closable={false}
-                  maskClosable={false}
-                  escToExit={false}
-                />
+                <>
+                  <div className="h-6 flex justify-between">
+                    <div className="shrink-0">
+                      <Checkbox
+                        className="!px-px"
+                        checked={showText}
+                        onClick={() => {
+                          setShowText(!showText);
+                        }}
+                        title="在图片上叠加显示识别文字"
+                      >
+                        {() => {
+                          return (
+                            <Tag
+                              bordered
+                              icon={<IconFontColors />}
+                              className="!text-base"
+                              color={showText ? "orange" : ""}
+                            >
+                              文字
+                            </Tag>
+                          );
+                        }}
+                      </Checkbox>
+                      <Checkbox
+                        className="!px-px"
+                        checked={showBorder}
+                        onClick={() => {
+                          setShowBorder(!showBorder);
+                        }}
+                        title="在图片上叠加显示识别边框"
+                      >
+                        {() => {
+                          return (
+                            <Tag
+                              bordered
+                              icon={<IconExpand />}
+                              className="!text-base"
+                              color={showBorder ? "orange" : ""}
+                            >
+                              边框
+                            </Tag>
+                          );
+                        }}
+                      </Checkbox>
+                    </div>
+                    <div className="pr-1 shrink-0">
+                      <Button
+                        className="mr-1"
+                        icon={<IconSave />}
+                        onClick={() => savePic(selectCardId)}
+                        size="mini"
+                        title="保存图片"
+                      ></Button>
+                      <Button
+                        className="mr-1"
+                        icon={<IconFullscreen />}
+                        onClick={adapt}
+                        size="mini"
+                        title="图片大小：适应窗口"
+                      ></Button>
+                      <Button
+                        className="mr-1"
+                        icon={<IconOriginalSize />}
+                        onClick={actual}
+                        size="mini"
+                        title="图片大小：实际大小"
+                      ></Button>
+                      {leafer.current && leafer.current.tree.scaleX && (
+                        <span className="text-xs">
+                          {Math.floor(leafer.current.tree.scaleX * 100)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="relative flex-1 overflow-hidden">
+                    <div
+                      ref={mediaView}
+                      className="h-full overflow-hidden"
+                      style={{
+                        backgroundColor: "var(--color-bg-3)",
+                      }}
+                    ></div>
+                    <div
+                      className="absolute top-0 left-0 origin-top-left"
+                      style={{
+                        transform,
+                      }}
+                      // 事件转发
+                      onWheelCapture={({ nativeEvent: event }) => {
+                        const canvas = leafer.current
+                          .view as HTMLCanvasElement | null;
+                        canvas?.dispatchEvent(
+                          new WheelEvent("wheel", {
+                            clientX: event.clientX,
+                            clientY: event.clientY,
+                            deltaY: event.deltaY,
+                            deltaX: event.deltaX,
+                            deltaZ: event.deltaZ,
+                            buttons: event.buttons,
+                          })
+                        );
+                      }}
+                    >
+                      <FloatingText
+                        data={ocrList[selectCardIndex]?.text?.data}
+                        showText={showText}
+                        showBorder={showBorder}
+                        onContextMenu={handleContextMenu}
+                      />
+                    </div>
+                  </div>
+                </>
               )}
             </div>,
             <div className="flex flex-col h-full">
@@ -628,17 +748,15 @@ function App() {
                 ocrList[selectCardIndex].id === selectCardId ? (
                   <>
                     {ocrList[selectCardIndex].state === 1 && (
-                      <div className="p-1 text-xs flex justify-between">
+                      <div className="h-6 text-xs flex justify-between items-center">
                         <div>
                           <span>
                             {"耗时 "}
-                            {ocrList[selectCardIndex].end_time &&
-                              ocrList[selectCardIndex].start_time &&
-                              (
-                                (ocrList[selectCardIndex].end_time -
-                                  ocrList[selectCardIndex].start_time) /
-                                1000
-                              ).toFixed(2)}
+                            {(
+                              ((ocrList[selectCardIndex].end_time || 0) -
+                                (ocrList[selectCardIndex].start_time || 0)) /
+                              1000
+                            ).toFixed(2)}
                           </span>
                           {" | "}
                           <span>

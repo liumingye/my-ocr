@@ -13,12 +13,7 @@
     }
   },
   "dependencies": {
-    "@arco-design/web-react": "^2.63.2",
-    "@electron/remote": "^2.0.8",
-    "electron-updater": "^6.2.1",
-    "node-screenshots": "^0.2.1",
-    "react-screenshots": "^0.5.22",
-    "thrift": "^0.20.0"
+    "node-screenshots": "^0.2.1"
   },
   "scripts": {
     "dev": "vite",
@@ -41,18 +36,27 @@
     ]
   },
   "devDependencies": {
+    "@arco-design/web-react": "^2.63.2",
+    "@electron/remote": "^2.0.8",
+    "@leafer-in/scroll": "^1.0.2",
+    "@leafer-in/view": "^1.0.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "ahooks": "^3.8.1",
     "autoprefixer": "^10.4.20",
     "electron": "^32.0.1",
     "electron-builder": "^24.13.3",
+    "electron-updater": "^6.2.1",
+    "leafer-ui": "^1.0.2",
     "nanoid": "^5.0.7",
     "postcss": "^8.4.41",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-screenshots": "^0.5.22",
     "strip-ansi": "^7.1.0",
     "tailwindcss": "^3.4.10",
+    "thrift": "^0.20.0",
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
     "vite-plugin-electron": "^0.28.7",
