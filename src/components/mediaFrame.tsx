@@ -44,23 +44,64 @@ function MediaFrame(props: Properties) {
     const timer = setInterval(() => {
       requestAnimationFrame(() => {
         if (!mediaImage.current) return;
-        if (
-          mediaImage.current.image &&
-          (mediaImage.current.image.width !== video.current.videoWidth ||
-            mediaImage.current.image.height !== video.current.videoHeight)
-        ) {
-          // setImageSize();
-          // mediaImage.current.image.width = mediaImage.current.width =
-          //   video.current.videoWidth;
-          // mediaImage.current.image.height = mediaImage.current.height =
-          //   video.current.videoHeight;
-          leafer.current?.zoom("fit", 0.0001);
-        }
         mediaImage.current.forceUpdate();
       });
     }, 1000 / 60);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!showCanvas) return;
+    leafer.current = new Leafer({
+      view: "media-view",
+      wheel: { zoomMode: "mouse", zoomSpeed: 0.01 },
+      zoom: { min: 0.3 },
+      move: {
+        drag: "auto",
+        // scroll: "limit"
+      },
+    });
+
+    mediaImage.current = new LeaferImage({
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      fill: "#000",
+      around: "center",
+      rotation: -90,
+    });
+
+    mediaImage.current.url =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+    mediaImage.current.on(ImageEvent.LOADED, () => {
+      if (mediaImage.current?.image) {
+        mediaImage.current.image.view = video.current;
+      }
+    });
+
+    leafer.current.add(mediaImage.current);
+
+    leafer.current.on(PointerEvent.DOUBLE_CLICK, () => {
+      leafer.current?.zoom("fit", 0.0001);
+    });
+
+    video.current.onloadedmetadata = () => {
+      video.current.play();
+      // set image size
+      if (mediaImage.current && mediaImage.current.image) {
+        mediaImage.current.image.width = mediaImage.current.width =
+          video.current.videoWidth;
+        mediaImage.current.image.height = mediaImage.current.height =
+          video.current.videoHeight;
+      }
+      leafer.current?.zoom("fit", 0.0001);
+    };
+    return () => {
+      leafer.current?.destroy(); // 开发环境useEffect会执行2次，必须及时销毁
+    };
+  }, [showCanvas]);
 
   const startCamera = async () => {
     setIsError(false);
@@ -92,57 +133,6 @@ function MediaFrame(props: Properties) {
 
       setShowCanvas(true);
       setIsError(false);
-
-      if (!mediaViewRef.current) return;
-
-      leafer.current?.destroy();
-
-      leafer.current = new Leafer({
-        view: mediaViewRef.current,
-        wheel: { zoomMode: "mouse", zoomSpeed: 0.01 },
-        zoom: { min: 0.3 },
-        move: {
-          drag: "auto",
-          // scroll: "limit"
-        },
-      });
-
-      mediaImage.current = new LeaferImage({
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        fill: "#000",
-        around: "center",
-        rotation: -90,
-      });
-
-      mediaImage.current.url =
-        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-
-      mediaImage.current.on(ImageEvent.LOADED, () => {
-        if (mediaImage.current?.image) {
-          mediaImage.current.image.view = video.current;
-        }
-      });
-
-      leafer.current.add(mediaImage.current);
-
-      leafer.current.on(PointerEvent.DOUBLE_CLICK, () => {
-        leafer.current?.zoom("fit", 0.0001);
-      });
-
-      video.current.onloadedmetadata = () => {
-        video.current.play();
-        // set image size
-        if (mediaImage.current && mediaImage.current.image) {
-          mediaImage.current.image.width = mediaImage.current.width =
-            video.current.videoWidth;
-          mediaImage.current.image.height = mediaImage.current.height =
-            video.current.videoHeight;
-        }
-        leafer.current?.zoom("fit", 0.0001);
-      };
     } catch (_e) {
       console.error(_e);
       setShowCanvas(false);
@@ -167,7 +157,6 @@ function MediaFrame(props: Properties) {
     };
     window.addEventListener("keydown", take);
     return () => {
-      leafer.current?.destroy(); // 开发环境useEffect会执行2次，必须及时销毁
       window.removeEventListener("keydown", take);
     };
   }, []);
@@ -196,6 +185,7 @@ function MediaFrame(props: Properties) {
       ) : (
         <>
           <div
+            id="media-view"
             ref={mediaViewRef}
             className="w-full h-full overflow-hidden"
           ></div>

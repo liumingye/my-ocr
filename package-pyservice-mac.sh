@@ -24,6 +24,7 @@ myocr-env/bin/pyinstaller --workpath release/build --distpath release --clean -y
 	--hidden-import tablepyxl.style \
 	--hidden-import skimage.filters.edges \
 	--hidden-import picodet_postprocess \
+	--add-data ${SITE_PACKAGES_PATH}/onnxruntime/capi/libonnxruntime_providers_shared.so:./onnxruntime/capi \
 	--add-data ${SITE_PACKAGES_PATH}/paddleocr/tools:./tools \
 	--add-data ${SITE_PACKAGES_PATH}/paddleocr/ppocr/utils/ppocr_keys_v1.txt:./ppocr/utils \
 	--add-data ${SITE_PACKAGES_PATH}/paddleocr/ppocr/utils/dict/table_structure_dict.txt:./ppocr/utils/dict

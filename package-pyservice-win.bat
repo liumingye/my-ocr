@@ -16,7 +16,6 @@ myocr-env\Scripts\pyinstaller --workpath release\build --distpath release --clea
 -p %SITE_PACKAGES_PATH%\paddleocr\ppstructure\layout ^
 --add-binary %SITE_PACKAGES_PATH%\paddle\libs;.\paddle\libs ^
 --add-data %CODE_PATH%\paddle_model;.\paddle_model ^
---add-data %CODE_PATH%\thrift_ocr_py;.\thrift_ocr_py ^
 --additional-hooks-dir=. ^
 --hidden-import framework_pb2 ^
 --hidden-import extract_textpoint_slow ^
@@ -24,6 +23,7 @@ myocr-env\Scripts\pyinstaller --workpath release\build --distpath release --clea
 --hidden-import tablepyxl.style ^
 --hidden-import skimage.filters.edges ^
 --hidden-import picodet_postprocess ^
+--add-data %SITE_PACKAGES_PATH%\onnxruntime\capi\onnxruntime_providers_shared.dll;.\onnxruntime\capi ^
 --add-data %SITE_PACKAGES_PATH%\paddleocr\tools;.\tools ^
 --add-data %SITE_PACKAGES_PATH%\paddleocr\ppocr\utils\ppocr_keys_v1.txt;.\ppocr\utils ^
 --add-data %SITE_PACKAGES_PATH%\paddleocr\ppocr\utils\dict\table_structure_dict.txt;.\ppocr\utils\dict
