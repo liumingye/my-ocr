@@ -16,6 +16,7 @@ import gc
 from utils.timer import Timer
 from rectify.rectify import correct_image_base64
 import argparse
+import sys
 
 # 内存回收时间
 gc_time = 60
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     parser.add_argument("--port", help="port", required=False)
     args = parser.parse_args()
     if not args.port:
-        exit(0)
+        sys.exit()
 
     # 初始化ocr
     initOcr()
