@@ -24,7 +24,7 @@ function MediaFrame(props: Properties) {
 
   const resize = useThrottleFn(
     () => {
-      if (size) {
+      if (size && leafer.current) {
         leafer.current.width = size.width;
         leafer.current.height = size.height;
         leafer.current.zoom("fit", 0.0001);
