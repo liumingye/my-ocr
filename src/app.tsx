@@ -561,7 +561,7 @@ function App() {
             />
           </div>
           <Divider className="left-side-divider !my-0" />
-          <div className="left-side-content overflow-hidden">
+          <div className="left-side-content overflow-y-auto">
             {ocrList.map((item, index) => {
               return (
                 <Card
