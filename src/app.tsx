@@ -91,7 +91,7 @@ function App() {
   const [showText, setShowText] = useState(true);
   const [showBorder, setShowBorder] = useState(false);
 
-  const mediaView = useRef<HTMLDivElement>(null);
+  const mediaViewRef = useRef<HTMLDivElement>(null);
 
   const leafer = useRef<LeaferApp>() as MutableRefObject<LeaferApp>;
   const [transform, setTransform] = useState("translate(0px, 0px) scale(1)");
@@ -111,10 +111,10 @@ function App() {
   };
 
   useEffect(() => {
-    if (!mediaView.current || isMedia) return;
+    if (!mediaViewRef.current || isMedia) return;
 
     leafer.current = new LeaferApp({
-      view: mediaView.current,
+      view: mediaViewRef.current,
 
       tree: {
         wheel: { zoomMode: "mouse", zoomSpeed: 0.01 },
@@ -196,7 +196,7 @@ function App() {
     };
   }, [isMedia, selectImage]);
 
-  const size = useSize(mediaView);
+  const size = useSize(mediaViewRef);
 
   const resize = useThrottleFn(
     () => {
@@ -323,7 +323,7 @@ function App() {
 
   useEffect(() => {
     const onOk = (_e: Electron.IpcRendererEvent, buffer: Buffer) => {
-      const file = new File([buffer], "screenshot.png", {
+      const file = new File([buffer], Date.now() + ".png", {
         type: "image/png",
       });
       startOcr(file);
@@ -501,7 +501,7 @@ function App() {
                         if (type.indexOf("image/") !== 0) return;
                         const blob = await item.getType(type);
                         if (blob) {
-                          const file = new File([blob], "image.png", {
+                          const file = new File([blob], Date.now() + ".png", {
                             type,
                           });
                           startOcr(file);
@@ -617,202 +617,204 @@ function App() {
             })}
           </div>
         </Layout.Sider>
-        <ResizeBox.Split
-          direction="horizontal"
-          style={{
-            width: "100%",
-            border: "1px solid var(--color-border)",
-          }}
-          max={0.8}
-          min={0.2}
-          panes={[
-            <div className="flex flex-col relative h-full w-full overflow-hidden">
-              {isMedia ? (
-                <MediaFrame
-                  onTake={(base64) => {
-                    if (window.thriftClientB == null) return;
-                    window.thriftClientB.rectify(base64, (_, res) => {
-                      console.log("rectify comp", res);
-                      const data = JSON.parse(res);
-                      startOcr("data:image/jpeg;base64," + data.data);
-                    });
-                  }}
-                />
-              ) : (
-                <>
-                  <div className="h-6 flex justify-between">
-                    <div className="shrink-0">
-                      <Checkbox
-                        className="!px-px"
-                        checked={showText}
-                        onClick={() => {
-                          setShowText(!showText);
-                        }}
-                        title="在图片上叠加显示识别文字"
-                      >
-                        {() => {
-                          return (
-                            <Tag
-                              bordered
-                              icon={<IconFontColors />}
-                              className="!text-base"
-                              color={showText ? "orange" : ""}
-                            >
-                              文字
-                            </Tag>
-                          );
-                        }}
-                      </Checkbox>
-                      <Checkbox
-                        className="!px-px"
-                        checked={showBorder}
-                        onClick={() => {
-                          setShowBorder(!showBorder);
-                        }}
-                        title="在图片上叠加显示识别边框"
-                      >
-                        {() => {
-                          return (
-                            <Tag
-                              bordered
-                              icon={<IconExpand />}
-                              className="!text-base"
-                              color={showBorder ? "orange" : ""}
-                            >
-                              边框
-                            </Tag>
-                          );
-                        }}
-                      </Checkbox>
-                    </div>
-                    <div className="pr-1 shrink-0">
-                      <Button
-                        className="mr-1"
-                        icon={<IconSave />}
-                        onClick={() => savePic(selectCardId)}
-                        size="mini"
-                        title="保存图片"
-                      ></Button>
-                      <Button
-                        className="mr-1"
-                        icon={<IconFullscreen />}
-                        onClick={adapt}
-                        size="mini"
-                        title="图片大小：适应窗口"
-                      ></Button>
-                      <Button
-                        className="mr-1"
-                        icon={<IconOriginalSize />}
-                        onClick={actual}
-                        size="mini"
-                        title="图片大小：实际大小"
-                      ></Button>
-                      {leafer.current && leafer.current.tree.scaleX && (
-                        <span className="text-xs">
-                          {Math.floor(leafer.current.tree.scaleX * 100)}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="relative flex-1 overflow-hidden">
-                    <div
-                      ref={mediaView}
-                      className="h-full overflow-hidden"
-                      style={{
-                        backgroundColor: "var(--color-bg-3)",
+        {isMedia ? (
+          <MediaFrame
+            onTake={(base64) => {
+              if (window.thriftClientB == null) return;
+              window.thriftClientB.rectify(base64, (_, res) => {
+                console.log("rectify comp", res);
+                const data = JSON.parse(res);
+                startOcr("data:image/jpeg;base64," + data.data);
+              });
+            }}
+          />
+        ) : (
+          <ResizeBox.Split
+            direction="horizontal"
+            style={{
+              width: "100%",
+              border: "1px solid var(--color-border)",
+            }}
+            max={0.8}
+            min={0.2}
+            panes={[
+              <div className="flex flex-col relative h-full w-full overflow-hidden">
+                <div className="h-[24px] flex justify-between px-px">
+                  <div className="shrink-0">
+                    <Checkbox
+                      className="!px-px"
+                      checked={showText}
+                      onClick={() => {
+                        setShowText(!showText);
                       }}
-                    ></div>
-                    <div
-                      className="absolute top-0 left-0 origin-top-left"
-                      style={{
-                        transform,
-                      }}
-                      // 事件转发
-                      onWheelCapture={({ nativeEvent: event }) => {
-                        const canvas = leafer.current
-                          .view as HTMLCanvasElement | null;
-                        canvas?.dispatchEvent(
-                          new WheelEvent("wheel", {
-                            clientX: event.clientX,
-                            clientY: event.clientY,
-                            deltaY: event.deltaY,
-                            deltaX: event.deltaX,
-                            deltaZ: event.deltaZ,
-                            buttons: event.buttons,
-                          })
+                      title="在图片上叠加显示识别文字"
+                    >
+                      {() => {
+                        return (
+                          <Tag
+                            size="small"
+                            bordered
+                            icon={<IconFontColors />}
+                            className="!text-[12px]"
+                            color={showText ? "orange" : ""}
+                          >
+                            文字
+                          </Tag>
                         );
                       }}
-                    >
-                      <FloatingText
-                        data={ocrList[selectCardIndex]?.text?.data}
-                        showText={showText}
-                        showBorder={showBorder}
-                        onContextMenu={handleContextMenu}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>,
-            <div className="flex flex-col h-full">
-              {ocrList[selectCardIndex] ? (
-                ocrList[selectCardIndex].state === 1 &&
-                ocrList[selectCardIndex].id === selectCardId ? (
-                  <>
-                    {ocrList[selectCardIndex].state === 1 && (
-                      <div className="h-6 text-xs flex justify-between items-center px-1">
-                        <div>
-                          <span>
-                            {"耗时 "}
-                            {(
-                              ((ocrList[selectCardIndex].end_time || 0) -
-                                (ocrList[selectCardIndex].start_time || 0)) /
-                              1000
-                            ).toFixed(2)}
-                          </span>
-                          {"s | "}
-                          <span>
-                            {"置信度 "}
-                            {ocrList[selectCardIndex]?.text?.score?.toFixed(2)}
-                          </span>
-                        </div>
-                        <Button
-                          type="text"
-                          className="!px-0 !h-auto !leading-none !text-xs"
-                          onClick={() => {
-                            clipboard.writeText(textareaText);
-                            Message.success("复制成功");
-                          }}
-                        >
-                          复制
-                        </Button>
-                      </div>
-                    )}
-                    <Input.TextArea
-                      spellCheck="false"
-                      className="content-textarea !h-full"
-                      placeholder=""
-                      style={{ resize: "none" }}
-                      value={textareaText}
-                      onChange={(value) => {
-                        setTextareaText(value);
+                    </Checkbox>
+                    <Checkbox
+                      className="!px-px"
+                      checked={showBorder}
+                      onClick={() => {
+                        setShowBorder(!showBorder);
                       }}
-                      onContextMenuCapture={handleContextMenu}
+                      title="在图片上叠加显示识别边框"
+                    >
+                      {() => {
+                        return (
+                          <Tag
+                            size="small"
+                            bordered
+                            icon={<IconExpand />}
+                            className="!text-[12px]"
+                            color={showBorder ? "orange" : ""}
+                          >
+                            边框
+                          </Tag>
+                        );
+                      }}
+                    </Checkbox>
+                  </div>
+                  <div className="pr-1 shrink-0">
+                    <Button
+                      className="mr-1"
+                      icon={<IconSave />}
+                      onClick={() => savePic(selectCardId)}
+                      size="mini"
+                      title="保存图片"
+                    ></Button>
+                    <Button
+                      className="mr-1"
+                      icon={<IconFullscreen />}
+                      onClick={adapt}
+                      size="mini"
+                      title="图片大小：适应窗口"
+                    ></Button>
+                    <Button
+                      className="mr-1"
+                      icon={<IconOriginalSize />}
+                      onClick={actual}
+                      size="mini"
+                      title="图片大小：实际大小"
+                    ></Button>
+                    {leafer.current && leafer.current.tree.scaleX && (
+                      <span className="text-[12px]">
+                        {Math.floor(leafer.current.tree.scaleX * 100)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="relative flex-1 overflow-hidden">
+                  <div
+                    ref={mediaViewRef}
+                    className="h-full overflow-hidden"
+                    style={{
+                      backgroundColor: "var(--color-bg-3)",
+                    }}
+                  ></div>
+                  <div
+                    className="absolute top-0 left-0 origin-top-left"
+                    style={{
+                      transform,
+                    }}
+                    // 事件转发
+                    onWheelCapture={({ nativeEvent: event }) => {
+                      const canvas = leafer.current
+                        .view as HTMLCanvasElement | null;
+                      canvas?.dispatchEvent(
+                        new WheelEvent("wheel", {
+                          clientX: event.clientX,
+                          clientY: event.clientY,
+                          deltaY: event.deltaY,
+                          deltaX: event.deltaX,
+                          deltaZ: event.deltaZ,
+                          buttons: event.buttons,
+                        })
+                      );
+                    }}
+                  >
+                    <FloatingText
+                      data={ocrList[selectCardIndex]?.text?.data}
+                      showText={showText}
+                      showBorder={showBorder}
+                      onContextMenu={handleContextMenu}
                     />
-                  </>
+                  </div>
+                </div>
+              </div>,
+              <div className="flex flex-col h-full">
+                {ocrList[selectCardIndex] ? (
+                  ocrList[selectCardIndex].state === 1 &&
+                  ocrList[selectCardIndex].id === selectCardId ? (
+                    <>
+                      {ocrList[selectCardIndex].state === 1 && (
+                        <div className="h-[24px] text-[12px] flex justify-between items-center px-1">
+                          <div>
+                            <span>
+                              {"耗时 "}
+                              {(
+                                ((ocrList[selectCardIndex].end_time || 0) -
+                                  (ocrList[selectCardIndex].start_time || 0)) /
+                                1000
+                              ).toFixed(2)}
+                            </span>
+                            {"s | "}
+                            <span>
+                              {"置信度 "}
+                              {ocrList[selectCardIndex]?.text?.score?.toFixed(
+                                2
+                              )}
+                            </span>
+                          </div>
+                          <Button
+                            type="text"
+                            className="!px-0 !h-auto !leading-none !text-xs"
+                            onClick={() => {
+                              clipboard.writeText(textareaText);
+                              Message.success("复制成功");
+                            }}
+                          >
+                            复制
+                          </Button>
+                        </div>
+                      )}
+                      <Input.TextArea
+                        spellCheck="false"
+                        className="content-textarea !h-full"
+                        placeholder=""
+                        style={{ resize: "none" }}
+                        value={textareaText}
+                        onChange={(value) => {
+                          setTextareaText(value);
+                        }}
+                        onContextMenuCapture={handleContextMenu}
+                      />
+                    </>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      {textareaText}
+                    </div>
+                  )
                 ) : (
                   <div className="h-full flex items-center justify-center">
-                    {textareaText}
+                    空
                   </div>
-                )
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  空
-                </div>
-              )}
-            </div>,
-          ]}
-        />
+                )}
+              </div>,
+            ]}
+          />
+        )}
       </Layout>
     </div>
   );

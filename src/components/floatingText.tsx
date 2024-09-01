@@ -68,6 +68,10 @@ const FloatingText = ({
       adjustedHeight = 12;
     }
 
+    if (!showText && !showBorder) {
+      return;
+    }
+
     return (
       <div
         key={item.text}
@@ -80,6 +84,7 @@ const FloatingText = ({
           transform: transform,
           background: showText ? "var(--color-neutral-4)" : "",
           border: showBorder ? "1px solid #bb1133" : "",
+          pointerEvents: showText ? "auto" : "none",
         }}
         onContextMenuCapture={onContextMenu}
       >
