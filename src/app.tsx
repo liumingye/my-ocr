@@ -62,13 +62,11 @@ type OcrListState = {
   id: string;
   img_data?: string;
   state?: number;
-  text?: {
+  data?: {
     code: number;
-    data: OcrData[] | string;
-    score?: number;
+    data: OcrData;
+    msg?: string;
   };
-  start_time?: number;
-  end_time?: number;
 };
 
 type OcrListAction =
@@ -79,6 +77,29 @@ type OcrListAction =
   | {
       type: "empty";
     };
+
+const genErrorData = (text: string) => {
+  return {
+    code: 101,
+    data: {
+      result: [
+        {
+          box: [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+          ],
+          text: text,
+          end: "",
+          score: 1,
+        },
+      ],
+      time: 0,
+      score: 1,
+    },
+  };
+};
 
 function App() {
   const pasteImageRef = useRef(window);
@@ -118,7 +139,7 @@ function App() {
 
       tree: {
         wheel: { zoomMode: "mouse", zoomSpeed: 0.01 },
-        zoom: { min: 0.3 },
+        zoom: { min: 0.05 },
         move: {
           drag: "auto",
           holdMiddleKey: false,
@@ -226,7 +247,7 @@ function App() {
   };
 
   const onCardClick = (item: OcrListState, index: number) => {
-    setTextareaText(extractText(item.text));
+    setTextareaText(extractText(item.data));
     setSelectCardId(item.id);
     setSelectCardIndex(index);
     if (!!item.img_data) {
@@ -253,7 +274,7 @@ function App() {
         return state.map((item) => {
           if (item.id === action.payload.id) {
             if (item.id === selectCardId && action.payload.state === 1) {
-              setTextareaText(extractText(action.payload.text));
+              setTextareaText(extractText(action.payload.data));
             }
             return { ...item, ...action.payload };
           }
@@ -343,9 +364,8 @@ function App() {
           type: "update",
           payload: {
             id,
-            text: { code: 101, data: [{ text: "识别出错了", end: "" }] },
+            data: genErrorData("识别出错了"),
             state: -1,
-            end_time: Date.now(),
           },
         });
       } else {
@@ -354,9 +374,8 @@ function App() {
           type: "update",
           payload: {
             id,
-            text: transferData(res),
+            data: transferData(res),
             state: 1,
-            end_time: Date.now(),
           },
         });
       }
@@ -386,10 +405,9 @@ function App() {
         type: "add",
         payload: {
           id: id,
-          text: { code: 101, data: [{ text: "正在识别中...", end: "" }] },
+          data: genErrorData("正在识别中..."),
           state: 0,
           img_data: "",
-          start_time: Date.now(),
         },
       });
       const reader = new FileReader();
@@ -419,10 +437,9 @@ function App() {
         type: "add",
         payload: {
           id: id,
-          text: { code: 101, data: [{ text: "正在识别中...", end: "" }] },
+          data: genErrorData("正在识别中..."),
           state: 0,
           img_data: thing,
-          start_time: Date.now(),
         },
       });
       thriftClientOcr(id, thing);
@@ -440,14 +457,14 @@ function App() {
       }
     }
     if (data instanceof Object) {
-      return data as OcrListState["text"];
+      return data as OcrListState["data"];
     }
-    return { code: 101, data: [{ text: "transfer data error", end: "" }] };
+    return genErrorData("识别出错了");
   }
 
   // 提取所有的文本内容
-  function extractText(jsonData: OcrListState["text"] | undefined) {
-    let data: OcrListState["text"] | undefined = jsonData;
+  function extractText(jsonData: OcrListState["data"] | undefined) {
+    let data: OcrListState["data"] | undefined = jsonData;
     if (typeof data === "string") {
       try {
         data = JSON.parse(data);
@@ -455,8 +472,12 @@ function App() {
         return error.toString();
       }
     }
-    if (!Array.isArray(data?.data)) return data?.data?.toString() || "";
-    return data.data.reduce((text, item) => text + item.text + item.end, "");
+    if (!data) return "";
+    if ((data.code + "")[0] !== "1") return data.msg || "";
+    return data.data.result.reduce(
+      (text, item) => text + item.text + item.end,
+      ""
+    );
   }
 
   useEffect(() => {
@@ -608,7 +629,7 @@ function App() {
                   }}
                 >
                   <CardContent
-                    text={extractText(item.text)}
+                    text={extractText(item.data)}
                     state={item.state || -1}
                     img_data={item.img_data || ""}
                   />
@@ -744,12 +765,15 @@ function App() {
                       );
                     }}
                   >
-                    <FloatingText
-                      data={ocrList[selectCardIndex]?.text?.data}
-                      showText={showText}
-                      showBorder={showBorder}
-                      onContextMenu={handleContextMenu}
-                    />
+                    {ocrList[selectCardIndex] &&
+                      ocrList[selectCardIndex].state === 1 && (
+                        <FloatingText
+                          data={ocrList[selectCardIndex].data?.data.result}
+                          showText={showText}
+                          showBorder={showBorder}
+                          onContextMenu={handleContextMenu}
+                        />
+                      )}
                   </div>
                 </div>
               </div>,
@@ -763,18 +787,16 @@ function App() {
                           <div>
                             <span>
                               {"耗时 "}
-                              {(
-                                ((ocrList[selectCardIndex].end_time || 0) -
-                                  (ocrList[selectCardIndex].start_time || 0)) /
-                                1000
-                              ).toFixed(2)}
+                              {ocrList[selectCardIndex].data?.data.time.toFixed(
+                                2
+                              )}
                             </span>
                             {"s | "}
                             <span>
                               {"置信度 "}
-                              {ocrList[selectCardIndex]?.text?.score?.toFixed(
-                                2
-                              )}
+                              {ocrList[
+                                selectCardIndex
+                              ].data?.data.score.toFixed(2)}
                             </span>
                           </div>
                           <Button

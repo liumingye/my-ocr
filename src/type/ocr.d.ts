@@ -7,8 +7,12 @@ interface Window {
 }
 
 type OcrData = {
-  text: string;
-  end: string;
-  score?: number;
-  box?: [number, number][];
+  result: {
+    text: string;
+    end: string;
+    score: number;
+    box: number[][];
+  }[];
+  score: number;
+  time: number;
 };

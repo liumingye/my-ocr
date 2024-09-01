@@ -1,5 +1,5 @@
 wheel
-paddlepaddle
+paddlepaddle==2.6.1
 paddleocr>=2.8.1
 thrift
 pyinstaller

@@ -22,6 +22,7 @@ yarn-error.log*
 dist
 py-service/start.bat
 py-service/paddle_model
+py-service/paddle_model_onnx
 thrift-src/thrift_ocr_py
 thrift-src/thrift_ocr_ts
 thrift-src/gen.bat

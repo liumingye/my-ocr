@@ -17,10 +17,7 @@ const calculateTextWidth = (text: string, textStyle: string) => {
   return textMetrics.width;
 };
 
-const euclideanDistance = (
-  [x1, y1]: [number, number],
-  [x2, y2]: [number, number]
-) => {
+const euclideanDistance = ([x1, y1]: number[], [x2, y2]: number[]) => {
   return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 };
 
@@ -30,7 +27,7 @@ const FloatingText = ({
   showBorder,
   onContextMenu,
 }: {
-  data: OcrData[] | string | undefined;
+  data: OcrData["result"] | undefined;
   showText: boolean;
   showBorder: boolean;
   onContextMenu: MouseEventHandler<HTMLDivElement>;
@@ -39,9 +36,32 @@ const FloatingText = ({
   return data.map((item) => {
     if (!item.box) return;
 
-    const [tl, tr, br] = item.box;
+    const [tl, tr, br, bl] = item.box;
 
-    const transform = "matrix(1,0,0,1," + tl[0] + "," + tl[1] + ")";
+    // 计算文本旋转角度
+    const dx = tr[0] - tl[0];
+    const dy = tr[1] - tl[1];
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+    const { x, y, scaleX, scaleY, rotateX, rotateY } = {
+      x: tl[0],
+      y: tl[1],
+      scaleX: 1,
+      scaleY: 1,
+      rotateX: -angle,
+      rotateY: -angle,
+    };
+
+    const matrix = [
+      scaleX * Math.cos((rotateX * Math.PI) / 180),
+      -scaleX * Math.sin((rotateX * Math.PI) / 180),
+      scaleY * Math.sin((rotateY * Math.PI) / 180),
+      scaleY * Math.cos((rotateY * Math.PI) / 180),
+      x,
+      y,
+    ];
+
+    const transform = `matrix(${matrix.join(", ")})`;
 
     const horizontalDistance = euclideanDistance(tl, tr);
     const verticalDistance = euclideanDistance(tr, br);
