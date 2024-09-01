@@ -31,5 +31,5 @@ class MultiPara(Tbpu):
             self.pp.run(tbs)  # 预测结尾分隔符
             for tb in tbs:
                 del tb["normalized_bbox"]
-        print(textBlocks)
+        # print(textBlocks)
         return textBlocks
