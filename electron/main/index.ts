@@ -224,7 +224,7 @@ const createPyProc = () => {
   if (app.isPackaged) {
     script = path.join(process.env.APP_ROOT, "../../ocr_server/ocr_server");
   }
-  pyProc = spawn(script);
+  pyProc = spawn(script, ["--port", "8265"]);
   if (pyProc != null) {
     console.log("child process success");
   }

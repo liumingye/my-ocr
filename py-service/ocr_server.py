@@ -39,19 +39,19 @@ def initOcr():
         return
     print("init ocr")
 
-    folderName = "paddle_model"
+    folderName = ""
     use_onnx = False
 
-    # 判断paddle_model_onnx文件夹是否存在
-    if os.path.exists(os.path.join(RUN_PATH, "paddle_model_onnx")):
-        folderName = "paddle_model_onnx"
+    # 判断onnx文件夹是否存在，如果存在就用onnx
+    if os.path.exists(os.path.join(RUN_PATH, "paddle_model", "onnx")):
+        folderName = "onnx"
         use_onnx = True
 
-    rec_model_dir = os.path.join(RUN_PATH, folderName, "rec-ch")
+    rec_model_dir = os.path.join(RUN_PATH, "paddle_model", folderName, "rec-ch")
     # 检测inference模型路径
-    det_model_dir = os.path.join(RUN_PATH, folderName, "det")
+    det_model_dir = os.path.join(RUN_PATH, "paddle_model", folderName, "det")
     # 方向分类器inference模型路径
-    cls_model_dir = os.path.join(RUN_PATH, folderName, "cls")
+    cls_model_dir = os.path.join(RUN_PATH, "paddle_model", folderName, "cls")
 
     ppocr = paddleocr.PaddleOCR(
         # 语言支持

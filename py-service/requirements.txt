@@ -4,3 +4,4 @@ paddleocr>=2.8.1
 thrift
 pyinstaller
 imutils
+onnxruntime
