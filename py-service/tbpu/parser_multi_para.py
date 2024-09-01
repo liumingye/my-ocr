@@ -22,7 +22,6 @@ class MultiPara(Tbpu):
         self.pp = ParagraphParse(get_info, set_end)
 
     def run(self, textBlocks):
-        
         textBlocks = linePreprocessing(textBlocks)  # 预处理
         textBlocks = self.gtree.sort(textBlocks)  # 构建间隙树
         nodes = self.gtree.get_nodes_text_blocks()  # 获取树节点序列
@@ -31,5 +30,4 @@ class MultiPara(Tbpu):
             self.pp.run(tbs)  # 预测结尾分隔符
             for tb in tbs:
                 del tb["normalized_bbox"]
-        # print(textBlocks)
         return textBlocks
