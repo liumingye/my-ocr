@@ -32,7 +32,10 @@ const FloatingText = ({
   showBorder: boolean;
   onContextMenu: MouseEventHandler<HTMLDivElement>;
 }) => {
+  console.log("FloatingText");
+
   if (!Array.isArray(data)) return;
+
   return data.map((item) => {
     if (!item.box) return;
 

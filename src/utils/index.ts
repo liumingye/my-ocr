@@ -1,3 +1,52 @@
+import { Menu, MenuItem, getCurrentWindow, clipboard } from "@electron/remote";
+
+const menuItems = {
+  selectAll: new MenuItem({ label: "全选", role: "selectAll" }),
+  undo: new MenuItem({ label: "撤销", role: "undo" }),
+  redo: new MenuItem({ label: "恢复", role: "redo" }),
+  separator: new MenuItem({ type: "separator" }),
+  cut: new MenuItem({ label: "剪切", role: "cut" }),
+  copy: new MenuItem({
+    label: "复制",
+    // role: "copy",
+    click: () => {
+      // 不带样式复制
+      const text = window.getSelection()?.toString();
+      if (!text) return;
+      clipboard.writeText(text);
+    },
+  }),
+  paste: new MenuItem({ label: "粘贴", role: "paste" }),
+};
+
+// 右键菜单
+export const handleContextMenu = (
+  itemsName: (keyof typeof menuItems)[] = [
+    "cut",
+    "copy",
+    "paste",
+    "separator",
+    "selectAll",
+    "separator",
+    "undo",
+    "redo",
+  ],
+  otherMenu: Electron.MenuItem[] = []
+) => {
+  let menu = new Menu();
+  if (itemsName.length > 0) {
+    itemsName.forEach((itemName) => {
+      menu.append(menuItems[itemName]);
+    });
+  }
+  otherMenu.forEach((m) => {
+    menu.append(m);
+  });
+  menu.popup({
+    window: getCurrentWindow(),
+  });
+};
+
 export const isAcceptFile = (file: File, accept: string) => {
   if (accept && file) {
     const accepts = Array.isArray(accept)

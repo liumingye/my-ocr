@@ -45,18 +45,7 @@ import {
 } from "leafer-ui";
 import { ScrollBar } from "@leafer-in/scroll";
 import { useSize, useThrottleFn } from "ahooks";
-import { isAcceptFile } from "@/utils";
-
-// 选中文本右键菜单增加复制功能
-const handleContextMenu = () => {
-  let menu = new Menu();
-  menu.append(new MenuItem({ label: "剪切", role: "cut" }));
-  menu.append(new MenuItem({ label: "复制", role: "copy" }));
-  menu.append(new MenuItem({ label: "粘贴", role: "paste" }));
-  menu.popup({
-    window: getCurrentWindow(),
-  });
-};
+import { isAcceptFile, handleContextMenu } from "@/utils";
 
 type OcrListState = {
   id: string;
@@ -115,7 +104,8 @@ function App() {
   const mediaViewRef = useRef<HTMLDivElement>(null);
 
   const leafer = useRef<LeaferApp>() as MutableRefObject<LeaferApp>;
-  const [transform, setTransform] = useState("translate(0px, 0px) scale(1)");
+
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const adapt = () => {
     leafer.current.tree.zoom("fit", 0.0001);
@@ -174,10 +164,9 @@ function App() {
 
       leafer.current.tree.on([ZoomEvent.ZOOM, MoveEvent.MOVE], (e) => {
         // console.log("move", e);
+        if (!overlayRef.current) return;
         const point = mediaImage.getWorldPoint({ x: 0, y: 0 });
-        setTransform(
-          `translate(${point.x}px,${point.y}px) scale(${leafer.current.tree.scaleX},${leafer.current.tree.scaleY})`
-        );
+        overlayRef.current.style.transform = `translate(${point.x}px,${point.y}px) scale(${leafer.current.tree.scaleX},${leafer.current.tree.scaleY})`;
       });
 
       mediaImage.on(ImageEvent.LOADED, () => {
@@ -745,10 +734,8 @@ function App() {
                     }}
                   ></div>
                   <div
+                    ref={overlayRef}
                     className="absolute top-0 left-0 origin-top-left"
-                    style={{
-                      transform,
-                    }}
                     // 事件转发
                     onWheelCapture={({ nativeEvent: event }) => {
                       const canvas = leafer.current
@@ -771,7 +758,9 @@ function App() {
                           data={ocrList[selectCardIndex].data?.data.result}
                           showText={showText}
                           showBorder={showBorder}
-                          onContextMenu={handleContextMenu}
+                          onContextMenu={() => {
+                            handleContextMenu(["copy"]);
+                          }}
                         />
                       )}
                   </div>
@@ -820,7 +809,18 @@ function App() {
                         onChange={(value) => {
                           setTextareaText(value);
                         }}
-                        onContextMenuCapture={handleContextMenu}
+                        onContextMenuCapture={() => {
+                          handleContextMenu([
+                            "cut",
+                            "copy",
+                            "paste",
+                            "separator",
+                            "selectAll",
+                            "separator",
+                            "undo",
+                            "redo",
+                          ]);
+                        }}
                       />
                     </>
                   ) : (

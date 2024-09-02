@@ -72,6 +72,9 @@ export default defineConfig(({ command }) => {
         port: +url.port,
       };
     })(),
+    esbuild: {
+      drop: ["console", "debugger"],
+    },
     clearScreen: false,
   };
 });
