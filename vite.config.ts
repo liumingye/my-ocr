@@ -73,7 +73,7 @@ export default defineConfig(({ command }) => {
       };
     })(),
     esbuild: {
-      drop: ["console", "debugger"],
+      drop: isBuild ? ["console", "debugger"] : [],
     },
     clearScreen: false,
   };

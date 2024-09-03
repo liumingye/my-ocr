@@ -197,7 +197,7 @@ function MediaFrame(props: Properties) {
               onClick={() => {
                 if (!mediaImage.current || !leafer.current) return;
                 mediaImage.current.rotation =
-                  (mediaImage.current.rotation || 0) - 90;
+                  (mediaImage.current.rotation ?? 0) - 90;
                 leafer.current.zoom("fit", 0.0001);
               }}
             >
@@ -221,7 +221,7 @@ function MediaFrame(props: Properties) {
               onClick={() => {
                 if (!mediaImage.current || !leafer.current) return;
                 mediaImage.current.rotation =
-                  (mediaImage.current.rotation || 0) + 90;
+                  (mediaImage.current.rotation ?? 0) + 90;
                 leafer.current.zoom("fit", 0.0001);
               }}
             >

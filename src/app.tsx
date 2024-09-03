@@ -619,7 +619,7 @@ function App() {
                 >
                   <CardContent
                     text={extractText(item.data)}
-                    state={item.state || -1}
+                    state={item.state ?? -1}
                     img_data={item.img_data || ""}
                   />
                 </Card>

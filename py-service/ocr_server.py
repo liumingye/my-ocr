@@ -75,6 +75,7 @@ def initOcr():
         use_onnx=use_onnx,
         # 是否使用mkldnn
         # enable_mkldnn=True,
+        det_limit_side_len=2048,
     )
 
 

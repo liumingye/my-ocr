@@ -36,7 +36,7 @@ const FloatingText = ({
 
   if (!Array.isArray(data)) return;
 
-  return data.map((item) => {
+  return data.map((item, index) => {
     if (!item.box) return;
 
     const [tl, tr, br, bl] = item.box;
@@ -97,7 +97,7 @@ const FloatingText = ({
 
     return (
       <div
-        key={item.text}
+        key={index}
         className="absolute cursor-text leading-none whitespace-nowrap origin-top-left"
         style={{
           letterSpacing,

@@ -50,9 +50,9 @@ const CardContent = ({
           {text}
         </div>
       </Space>
-      {state == 1 ? (
+      {state === 1 ? (
         <IconCheck />
-      ) : state == 0 ? (
+      ) : state === 0 ? (
         <IconLoading />
       ) : (
         <IconClose />
