@@ -25,6 +25,7 @@ const init_thrift_A = () => {
   });
   thriftConnectionA.on("close", function (e) {
     console.log("onclose A");
+    window.thriftClientA = null;
     setTimeout(() => {
       console.log("reconnect");
       init_thrift_A();
@@ -50,6 +51,7 @@ const init_thrift_B = () => {
   });
   thriftConnectionB.on("close", function (e) {
     console.log("onclose B");
+    window.thriftClientB = null;
     setTimeout(() => {
       console.log("reconnect");
       init_thrift_B();

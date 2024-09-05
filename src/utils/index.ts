@@ -89,3 +89,10 @@ export const isAcceptFile = (file: File, accept: string) => {
   }
   return !!file;
 };
+
+export const aDownload = (href: string) => {
+  const a = document.createElement("a");
+  a.href = href;
+  a.setAttribute("download", Date.now().toString());
+  a.click();
+};

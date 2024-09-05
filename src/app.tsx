@@ -6,6 +6,7 @@ import {
   useRef,
   useEffect,
   MutableRefObject,
+  memo,
 } from "react";
 import {
   Card,
@@ -25,6 +26,8 @@ import { Menu, MenuItem, getCurrentWindow, clipboard } from "@electron/remote";
 import MediaFrame from "@/components/mediaFrame";
 import FloatingText from "@/components/floatingText";
 import CardContent from "@/components/cardContent";
+import HeaderLeftButtons from "@/components/headerLeftButtons";
+import HeaderRightButtons from "@/components/headerRightButtons";
 import {
   IconPaste,
   IconCamera,
@@ -45,7 +48,7 @@ import {
 } from "leafer-ui";
 import { ScrollBar } from "@leafer-in/scroll";
 import { useSize, useThrottleFn } from "ahooks";
-import { isAcceptFile, handleContextMenu } from "@/utils";
+import { isAcceptFile, handleContextMenu, aDownload } from "@/utils";
 
 type OcrListState = {
   id: string;
@@ -107,8 +110,30 @@ function App() {
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
+  const ScaleText = memo(() => {
+    const [scale, setScale] = useState(100);
+
+    useEffect(() => {
+      if (!leafer.current) return;
+      const fn = () => {
+        setScale(Math.round((leafer.current.tree.scaleX ?? 1) * 100));
+      };
+      leafer.current.tree.on([ZoomEvent.ZOOM], fn);
+      return () => {
+        leafer.current.tree.off([ZoomEvent.ZOOM], fn);
+      };
+    }, []);
+
+    return (
+      <>
+        <span className="text-[12px]">{scale}%</span>
+      </>
+    );
+  });
+
   const adapt = () => {
     leafer.current.tree.zoom("fit", 0.0001);
+
     leafer.current.tree.emitEvent({
       type: ZoomEvent.ZOOM,
     });
@@ -217,7 +242,7 @@ function App() {
         });
       }
     },
-    { wait: 100 }
+    { wait: 150 }
   );
 
   useEffect(() => {
@@ -249,10 +274,7 @@ function App() {
   const savePic = (id: string) => {
     const current = ocrList.find((item) => item.id === id);
     if (!current || !current.img_data) return;
-    const a = document.createElement("a");
-    a.href = current.img_data;
-    a.setAttribute("download", Date.now().toString());
-    a.click();
+    aDownload(current.img_data);
   };
 
   const orcListReducer = (state: OcrListState[], action: OcrListAction) => {
@@ -342,7 +364,7 @@ function App() {
     return () => {
       window.ipcRenderer.off("SCREENSHOTS:ok", onOk);
     };
-  });
+  }, []);
 
   const thriftClientOcr = (id: string, imgOrPath: string) => {
     if (window.thriftClientA == null) return;
@@ -370,6 +392,34 @@ function App() {
       }
     });
   };
+
+  const PreviewTextArea = memo(({ value }: { value: string }) => {
+    const [_value, setValue] = useState(value);
+    return (
+      <Input.TextArea
+        spellCheck="false"
+        className="content-textarea !h-full"
+        placeholder=""
+        style={{ resize: "none" }}
+        value={_value}
+        onChange={(_value) => {
+          setValue(_value);
+        }}
+        onContextMenuCapture={() => {
+          handleContextMenu([
+            "cut",
+            "copy",
+            "paste",
+            "separator",
+            "selectAll",
+            "separator",
+            "undo",
+            "redo",
+          ]);
+        }}
+      />
+    );
+  });
 
   const startOcr = (thing: File | string) => {
     if (window.thriftClientA == null) {
@@ -488,7 +538,7 @@ function App() {
           className="sider flex"
           style={{
             minWidth: 300,
-            maxWidth: "60%",
+            // maxWidth: "60%",
             width: 300,
           }}
         >
@@ -650,80 +700,20 @@ function App() {
             panes={[
               <div className="flex flex-col relative h-full w-full overflow-hidden">
                 <div className="h-[24px] flex justify-between px-px">
-                  <div className="shrink-0">
-                    <Checkbox
-                      className="!px-px"
-                      checked={showText}
-                      onClick={() => {
-                        setShowText(!showText);
-                      }}
-                      title="在图片上叠加显示识别文字"
-                    >
-                      {() => {
-                        return (
-                          <Tag
-                            size="small"
-                            bordered
-                            icon={<IconFontColors />}
-                            className="!text-[12px]"
-                            color={showText ? "orange" : ""}
-                          >
-                            文字
-                          </Tag>
-                        );
-                      }}
-                    </Checkbox>
-                    <Checkbox
-                      className="!px-px"
-                      checked={showBorder}
-                      onClick={() => {
-                        setShowBorder(!showBorder);
-                      }}
-                      title="在图片上叠加显示识别边框"
-                    >
-                      {() => {
-                        return (
-                          <Tag
-                            size="small"
-                            bordered
-                            icon={<IconExpand />}
-                            className="!text-[12px]"
-                            color={showBorder ? "orange" : ""}
-                          >
-                            边框
-                          </Tag>
-                        );
-                      }}
-                    </Checkbox>
-                  </div>
-                  <div className="pr-1 shrink-0">
-                    <Button
-                      className="mr-1"
-                      icon={<IconSave />}
-                      onClick={() => savePic(selectCardId)}
-                      size="mini"
-                      title="保存图片"
-                    ></Button>
-                    <Button
-                      className="mr-1"
-                      icon={<IconFullscreen />}
-                      onClick={adapt}
-                      size="mini"
-                      title="图片大小：适应窗口"
-                    ></Button>
-                    <Button
-                      className="mr-1"
-                      icon={<IconOriginalSize />}
-                      onClick={actual}
-                      size="mini"
-                      title="图片大小：实际大小"
-                    ></Button>
-                    {leafer.current && leafer.current.tree.scaleX && (
-                      <span className="text-[12px]">
-                        {Math.floor(leafer.current.tree.scaleX * 100)}%
-                      </span>
-                    )}
-                  </div>
+                  <HeaderLeftButtons
+                    showText={showText}
+                    setShowText={setShowText}
+                    showBorder={showBorder}
+                    setShowBorder={setShowBorder}
+                  />
+                  <HeaderRightButtons
+                    savePic={savePic}
+                    selectCardId={selectCardId}
+                    adapt={adapt}
+                    actual={actual}
+                  >
+                    <ScaleText />
+                  </HeaderRightButtons>
                 </div>
                 <div className="relative flex-1 overflow-hidden">
                   <div
@@ -800,28 +790,7 @@ function App() {
                           </Button>
                         </div>
                       )}
-                      <Input.TextArea
-                        spellCheck="false"
-                        className="content-textarea !h-full"
-                        placeholder=""
-                        style={{ resize: "none" }}
-                        value={textareaText}
-                        onChange={(value) => {
-                          setTextareaText(value);
-                        }}
-                        onContextMenuCapture={() => {
-                          handleContextMenu([
-                            "cut",
-                            "copy",
-                            "paste",
-                            "separator",
-                            "selectAll",
-                            "separator",
-                            "undo",
-                            "redo",
-                          ]);
-                        }}
-                      />
+                      <PreviewTextArea value={textareaText} />
                     </>
                   ) : (
                     <div className="h-full flex items-center justify-center">

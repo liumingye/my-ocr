@@ -75,7 +75,12 @@ def initOcr():
         use_onnx=use_onnx,
         # 是否使用mkldnn
         # enable_mkldnn=True,
-        det_limit_side_len=2048,
+        # det_limit_side_len=960,
+        # det_limit_type="max",
+        use_dilation=True,
+        # det_db_unclip_ratio=1.5,
+        det_db_thresh=0.2,
+        det_db_box_thresh=0.5,
     )
 
 
