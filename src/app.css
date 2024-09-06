@@ -38,15 +38,15 @@ html {
 
 .layout-basic-app .card-selected {
   background-color: rgb(var(--primary-6));
-  color: var(--color-fill-1);
+  /* color: var(--color-fill-1); */
 }
 
 .layout-basic-app .card-selected .ocr-content {
-  color: var(--color-fill-1);
+  color: #fff;
 }
 
 .layout-basic-app .card-selected .arco-icon {
-  stroke: var(--color-fill-1);
+  stroke: #fff;
 }
 
 .layout-basic-app .card-state-icon,

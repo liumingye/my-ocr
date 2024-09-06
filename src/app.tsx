@@ -7,6 +7,9 @@ import {
   useEffect,
   MutableRefObject,
   memo,
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
 } from "react";
 import {
   Card,
@@ -18,8 +21,6 @@ import {
   Message,
   ResizeBox,
   Button,
-  Checkbox,
-  Tag,
 } from "@arco-design/web-react";
 import { nanoid } from "nanoid";
 import { Menu, MenuItem, getCurrentWindow, clipboard } from "@electron/remote";
@@ -32,11 +33,6 @@ import {
   IconPaste,
   IconCamera,
   IconScissor,
-  IconFontColors,
-  IconExpand,
-  IconOriginalSize,
-  IconFullscreen,
-  IconSave,
 } from "@arco-design/web-react/icon";
 import {
   App as LeaferApp,
@@ -93,6 +89,34 @@ const genErrorData = (text: string) => {
   };
 };
 
+const PreviewTextArea = memo((props: { value: string }) => {
+  const [value, setValue] = useState(props.value);
+  return (
+    <Input.TextArea
+      spellCheck="false"
+      className="content-textarea !h-full"
+      placeholder=""
+      style={{ resize: "none" }}
+      value={value}
+      onChange={(_value) => {
+        setValue(_value);
+      }}
+      onContextMenuCapture={() => {
+        handleContextMenu([
+          "cut",
+          "copy",
+          "paste",
+          "separator",
+          "selectAll",
+          "separator",
+          "undo",
+          "redo",
+        ]);
+      }}
+    />
+  );
+});
+
 function App() {
   const pasteImageRef = useRef(window);
   const [selectCardId, setSelectCardId] = useState("");
@@ -110,19 +134,18 @@ function App() {
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  const ScaleText = memo(() => {
+  const scaleTextRef = useRef<{
+    update: (num: number) => void;
+  }>();
+
+  const ScaleText = forwardRef((_, ref) => {
     const [scale, setScale] = useState(100);
 
-    useEffect(() => {
-      if (!leafer.current) return;
-      const fn = () => {
-        setScale(Math.round((leafer.current.tree.scaleX ?? 1) * 100));
-      };
-      leafer.current.tree.on([ZoomEvent.ZOOM], fn);
-      return () => {
-        leafer.current.tree.off([ZoomEvent.ZOOM], fn);
-      };
-    }, []);
+    const update = (num: number) => setScale(Math.round(num * 100));
+
+    useImperativeHandle(ref, () => ({
+      update: update,
+    }));
 
     return (
       <>
@@ -133,7 +156,6 @@ function App() {
 
   const adapt = () => {
     leafer.current.tree.zoom("fit", 0.0001);
-
     leafer.current.tree.emitEvent({
       type: ZoomEvent.ZOOM,
     });
@@ -174,7 +196,7 @@ function App() {
     const scroll = new ScrollBar(leafer.current);
     scroll.on(MoveEvent.DRAG, () => {
       leafer.current.tree.emitEvent({
-        type: ZoomEvent.ZOOM,
+        type: MoveEvent.MOVE,
       });
     });
 
@@ -192,11 +214,14 @@ function App() {
         if (!overlayRef.current) return;
         const point = mediaImage.getWorldPoint({ x: 0, y: 0 });
         overlayRef.current.style.transform = `translate(${point.x}px,${point.y}px) scale(${leafer.current.tree.scaleX},${leafer.current.tree.scaleY})`;
+
+        scaleTextRef.current?.update(leafer.current.tree.scaleX ?? 0);
       });
 
       mediaImage.on(ImageEvent.LOADED, () => {
         // 加载完图片的时候，适应窗口大小
         adapt();
+        scaleTextRef.current?.update(leafer.current.tree.scaleX ?? 0);
       });
 
       leafer.current.tree.add(mediaImage);
@@ -392,34 +417,6 @@ function App() {
       }
     });
   };
-
-  const PreviewTextArea = memo(({ value }: { value: string }) => {
-    const [_value, setValue] = useState(value);
-    return (
-      <Input.TextArea
-        spellCheck="false"
-        className="content-textarea !h-full"
-        placeholder=""
-        style={{ resize: "none" }}
-        value={_value}
-        onChange={(_value) => {
-          setValue(_value);
-        }}
-        onContextMenuCapture={() => {
-          handleContextMenu([
-            "cut",
-            "copy",
-            "paste",
-            "separator",
-            "selectAll",
-            "separator",
-            "undo",
-            "redo",
-          ]);
-        }}
-      />
-    );
-  });
 
   const startOcr = (thing: File | string) => {
     if (window.thriftClientA == null) {
@@ -712,7 +709,7 @@ function App() {
                     adapt={adapt}
                     actual={actual}
                   >
-                    <ScaleText />
+                    <ScaleText ref={scaleTextRef} />
                   </HeaderRightButtons>
                 </div>
                 <div className="relative flex-1 overflow-hidden">

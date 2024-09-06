@@ -4,9 +4,9 @@ const fontStack =
   "Inter, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 
 // 预测文本宽度
+const canvasElement = document.createElement("canvas");
+const context = canvasElement.getContext("2d");
 const calculateTextWidth = (text: string, textStyle: string) => {
-  const canvasElement = document.createElement("canvas");
-  const context = canvasElement.getContext("2d");
   if (!context) {
     throw new Error(
       "Failed to get the 2D rendering context for the canvas element."
@@ -98,14 +98,14 @@ const FloatingText = memo(
       return (
         <div
           key={index}
-          className="absolute cursor-text leading-none whitespace-nowrap origin-top-left"
+          className="absolute cursor-text leading-none whitespace-nowrap origin-top-left content-center text-center"
           style={{
             letterSpacing,
             fontSize: adjustedHeight,
             width: longerSide,
             height: shorterSide,
             transform: transform,
-            background: showText ? "var(--color-neutral-4)" : "",
+            background: showText ? "var(--color-neutral-3)" : "",
             border: showBorder ? "1px solid #bb1133" : "",
             pointerEvents: showText ? "auto" : "none",
           }}

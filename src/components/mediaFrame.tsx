@@ -189,7 +189,7 @@ function MediaFrame(props: Properties) {
             ref={mediaViewRef}
             className="w-full h-full overflow-hidden"
           ></div>
-          <div className="flex flex-col justify-evenly p-4 bg-white">
+          <div className="flex flex-col justify-evenly p-4 bg-[--color-bg-1]">
             <Button
               className="!w-24 !h-24"
               shape="round"
