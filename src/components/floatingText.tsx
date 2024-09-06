@@ -12,7 +12,7 @@ const calculateTextWidth = (text: string, textStyle: string) => {
       "Failed to get the 2D rendering context for the canvas element."
     );
   }
-  context.font = textStyle + " " + fontStack;
+  context.font = `${textStyle} ${fontStack}`;
   const textMetrics = context.measureText(text);
   return textMetrics.width;
 };

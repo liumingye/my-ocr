@@ -59,12 +59,12 @@ type OcrListState = {
 
 type OcrListAction =
   | {
-      type: "add" | "update" | "delete";
-      payload: OcrListState;
-    }
+    type: "add" | "update" | "delete";
+    payload: OcrListState;
+  }
   | {
-      type: "empty";
-    };
+    type: "empty";
+  };
 
 const genErrorData = (text: string) => {
   return {
@@ -91,6 +91,9 @@ const genErrorData = (text: string) => {
 
 const PreviewTextArea = memo((props: { value: string }) => {
   const [value, setValue] = useState(props.value);
+  useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
   return (
     <Input.TextArea
       spellCheck="false"
@@ -331,32 +334,28 @@ function App() {
     if (!clipboardData) return;
 
     const { items } = clipboardData;
-    const { length } = items;
 
-    let blob = null;
-    for (let i = 0; i < length; i++) {
+    // 直接在循环内部处理每个项目
+    for (let i = 0; i < items.length; i++) {
       const item = items[i];
       if (item.type.startsWith("image")) {
-        blob = item.getAsFile(); // blob中就是截图的文件，获取后可以上传到服务器
-        blob && startOcr(blob);
+        const blob = item.getAsFile(); // 直接获取blob并处理
+        if (blob) {
+          startOcr(blob); // 对每个图片文件调用startOcr
+        }
       }
     }
   };
 
   const dragHandler = (e: DragEvent) => {
     e.preventDefault();
-    switch (e.type) {
-      case "drop":
-        const dt = e.dataTransfer;
-        if (!dt) return;
-        const files = dt.files;
-        for (let index = 0; index < files.length; index++) {
-          const file = files[index];
-          startOcr(file);
-        }
-        break;
-      default:
-        break;
+    if (e.type === "drop") {
+      const dt = e.dataTransfer;
+      if (!dt) return;
+      const files = Array.from(dt.files); // 将 FileList 转换为数组
+      files.forEach((file) => {
+        startOcr(file);
+      });
     }
   };
 
@@ -756,7 +755,7 @@ function App() {
               <div className="flex flex-col h-full">
                 {ocrList[selectCardIndex] ? (
                   ocrList[selectCardIndex].state === 1 &&
-                  ocrList[selectCardIndex].id === selectCardId ? (
+                    ocrList[selectCardIndex].id === selectCardId ? (
                     <>
                       {ocrList[selectCardIndex].state === 1 && (
                         <div className="h-[24px] text-[12px] flex justify-between items-center px-1">
