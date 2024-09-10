@@ -8,7 +8,6 @@ import {
   MutableRefObject,
   memo,
   forwardRef,
-  useCallback,
   useImperativeHandle,
 } from "react";
 import {
@@ -59,12 +58,12 @@ type OcrListState = {
 
 type OcrListAction =
   | {
-    type: "add" | "update" | "delete";
-    payload: OcrListState;
-  }
+      type: "add" | "update" | "delete";
+      payload: OcrListState;
+    }
   | {
-    type: "empty";
-  };
+      type: "empty";
+    };
 
 const genErrorData = (text: string) => {
   return {
@@ -88,6 +87,22 @@ const genErrorData = (text: string) => {
     },
   };
 };
+
+const ScaleText = forwardRef((_, ref) => {
+  const [scale, setScale] = useState(100);
+
+  const update = (num: number) => setScale(Math.round(num * 100));
+
+  useImperativeHandle(ref, () => ({
+    update: update,
+  }));
+
+  return (
+    <>
+      <span className="text-[12px]">{scale}%</span>
+    </>
+  );
+});
 
 const PreviewTextArea = memo((props: { value: string }) => {
   const [value, setValue] = useState(props.value);
@@ -140,22 +155,6 @@ function App() {
   const scaleTextRef = useRef<{
     update: (num: number) => void;
   }>();
-
-  const ScaleText = forwardRef((_, ref) => {
-    const [scale, setScale] = useState(100);
-
-    const update = (num: number) => setScale(Math.round(num * 100));
-
-    useImperativeHandle(ref, () => ({
-      update: update,
-    }));
-
-    return (
-      <>
-        <span className="text-[12px]">{scale}%</span>
-      </>
-    );
-  });
 
   const adapt = () => {
     leafer.current.tree.zoom("fit", 0.0001);
@@ -217,14 +216,12 @@ function App() {
         if (!overlayRef.current) return;
         const point = mediaImage.getWorldPoint({ x: 0, y: 0 });
         overlayRef.current.style.transform = `translate(${point.x}px,${point.y}px) scale(${leafer.current.tree.scaleX},${leafer.current.tree.scaleY})`;
-
         scaleTextRef.current?.update(leafer.current.tree.scaleX ?? 0);
       });
 
       mediaImage.on(ImageEvent.LOADED, () => {
         // 加载完图片的时候，适应窗口大小
         adapt();
-        scaleTextRef.current?.update(leafer.current.tree.scaleX ?? 0);
       });
 
       leafer.current.tree.add(mediaImage);
@@ -253,6 +250,8 @@ function App() {
 
     // 切换Card后的时候，适应窗口大小
     adapt();
+
+    scaleTextRef.current?.update(leafer.current.tree.scaleX ?? 0);
 
     return () => {
       leafer.current.destroy(); // 开发环境useEffect会执行2次，必须及时销毁
@@ -755,7 +754,7 @@ function App() {
               <div className="flex flex-col h-full">
                 {ocrList[selectCardIndex] ? (
                   ocrList[selectCardIndex].state === 1 &&
-                    ocrList[selectCardIndex].id === selectCardId ? (
+                  ocrList[selectCardIndex].id === selectCardId ? (
                     <>
                       {ocrList[selectCardIndex].state === 1 && (
                         <div className="h-[24px] text-[12px] flex justify-between items-center px-1">

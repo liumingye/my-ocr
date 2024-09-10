@@ -75,12 +75,12 @@ def initOcr():
         use_onnx=use_onnx,
         # 是否使用mkldnn
         # enable_mkldnn=True,
-        # det_limit_side_len=960,
-        # det_limit_type="max",
+        det_limit_side_len=970,
+        det_limit_type="max",
         use_dilation=True,
-        # det_db_unclip_ratio=1.5,
+        det_db_unclip_ratio=1.5,
         det_db_thresh=0.2,
-        det_db_box_thresh=0.5,
+        det_db_box_thresh=0.4,
     )
 
 
@@ -107,7 +107,7 @@ class Ocr_handler:
         res = {"code": 100}
         im = readBase64Image(img_path)
         result = correct_image_base64(im)
-        print("rectify", result[0:999])
+        print("rectify", result[0:100])
         res["data"] = result
         return json.dumps(res)
 
@@ -123,7 +123,6 @@ class Ocr_handler:
         res = {"code": 100, "data": {"score": 1}}
         # print(f"start ocr {nid} {img_path}")
         print(f"start ocr {nid}")
-        print(f"{nid} start ocr")
         try:
             if img_path.startswith("data:"):
                 im = readBase64Image(img_path)
