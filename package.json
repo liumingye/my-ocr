@@ -52,7 +52,7 @@
     "autoprefixer": "^10.4.20",
     "electron": "^32.0.1",
     "electron-builder": "^24.13.3",
-    "nanoid": "^5.0.7",
+    "nanoid": "^5.0.9",
     "postcss": "^8.4.41",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
